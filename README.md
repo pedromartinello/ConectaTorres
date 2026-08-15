@@ -2,19 +2,81 @@
 
 Projeto de PDS para conexao entre clientes e prestadores de servicos locais em Torres/RS e regiao.
 
+Versao atual: **0.3.0 - fluxo principal completo sem LLM**.
+
 ## Tecnologias
 
 - Frontend: React + Vite
 - Backend: Node.js + Express
-- Banco de dados: PostgreSQL
+- Banco: PostgreSQL
 - ORM: Sequelize
 - Autenticacao: JWT em cookie HTTP-only + bcrypt
+- Upload de imagens: Multer + armazenamento local no ambiente de desenvolvimento
+- Banco local recomendado: Docker Compose
+
+## O que esta implementado
+
+### Conta e seguranca
+- Cadastro de cliente e prestador.
+- Login e logout.
+- Senha com hash bcrypt.
+- JWT em cookie HTTP-only.
+- Rate limit nas rotas de autenticacao.
+- Helmet, CORS e validacao de entrada.
+- Alteracao de nome, e-mail e telefone.
+- Alteracao de senha exigindo a senha atual.
+- Botao para mostrar/ocultar senhas no frontend.
+- Foto de perfil para clientes, prestadores e administradores.
+
+### Cliente
+- Busca de prestadores.
+- Filtros por categoria, cidade, preco maximo, avaliacao minima e disponibilidade por data.
+- Ordenacao por avaliacao, preco e nome.
+- Perfil detalhado do prestador.
+- Favoritos.
+- Solicitacao de horario.
+- Acompanhamento e cancelamento de agendamentos.
+- Avaliacao somente de atendimento concluido.
+- Denuncia de perfil ou avaliacao.
+- Central de notificacoes.
+- Acesso externo ao WhatsApp do prestador.
+
+### Prestador
+- Perfil profissional.
+- Cidade, regiao atendida, WhatsApp, descricao e valor de referencia.
+- Cadastro, edicao, ativacao e remocao de servicos.
+- Portfolio com ate 12 imagens.
+- Cadastro e remocao de periodos de disponibilidade.
+- Aceite, recusa e cancelamento de solicitacoes.
+- Ajuste de horario.
+- Conclusao de atendimento.
+- Visualizacao de avaliacoes recebidas.
+- Central de notificacoes.
+
+### Administrador
+- Conta administrativa de desenvolvimento sem cadastro publico.
+- Resumo da plataforma.
+- Ativacao/desativacao de usuarios.
+- Criacao e ativacao/desativacao de categorias.
+- Analise de denuncias.
+- Moderacao de avaliacoes.
+
+### Notificacoes
+As notificacoes ficam persistidas no PostgreSQL. O frontend consulta periodicamente novas notificacoes e mostra a quantidade nao lida no cabecalho.
+
+Eventos atuais:
+- nova solicitacao de horario;
+- aceite, recusa ou cancelamento;
+- ajuste de horario;
+- conclusao de atendimento;
+- nova avaliacao.
 
 ## Estrutura
 
 ```text
 ConectaTorres/
 ├── backend/
+│   ├── scripts/
 │   ├── src/
 │   │   ├── configuracao/
 │   │   ├── controladores/
@@ -23,6 +85,8 @@ ConectaTorres/
 │   │   ├── rotas/
 │   │   ├── sementes/
 │   │   └── utilitarios/
+│   ├── uploads/              # criado automaticamente, ignorado pelo Git
+│   ├── .env.exemplo
 │   └── package.json
 ├── frontend/
 │   ├── src/
@@ -31,132 +95,133 @@ ConectaTorres/
 │   │   ├── estilos/
 │   │   ├── paginas/
 │   │   └── servicos/
+│   ├── .env.exemplo
 │   └── package.json
+├── documentacao/
 ├── docker-compose.yml
 └── README.md
 ```
 
-## Primeira execucao
+## Primeira execucao com Docker
 
-### 1. Banco PostgreSQL
+### 1. PostgreSQL
 
-Opcao simples com Docker:
+Na raiz do projeto:
 
-```bash
+```powershell
 docker compose up -d banco
 ```
 
-Se voce ja possui PostgreSQL instalado, crie um banco chamado `conectatorres` e ajuste o arquivo `.env`.
+Confira:
+
+```powershell
+docker ps
+```
 
 ### 2. Backend
 
-```bash
+```powershell
 cd backend
-cp .env.exemplo .env
+Copy-Item .env.exemplo .env
 npm install
 npm run dev
 ```
 
-Por padrao, a API roda em `http://localhost:3001`.
+API:
+
+```text
+http://localhost:3001
+```
+
+Teste:
+
+```text
+http://localhost:3001/api/saude
+```
 
 ### 3. Frontend
 
 Em outro terminal:
 
-```bash
+```powershell
 cd frontend
-cp .env.exemplo .env
+Copy-Item .env.exemplo .env
 npm install
 npm run dev
 ```
 
-Por padrao, o frontend roda em `http://localhost:5173`.
+Site:
 
-## Rotas principais da API
+```text
+http://localhost:5173
+```
 
-### Sistema
-- `GET /api/saude`
+## Atualizacao a partir da versao anterior
 
-### Autenticacao
-- `POST /api/autenticacao/cadastro`
-- `POST /api/autenticacao/login`
-- `POST /api/autenticacao/logout`
-- `GET /api/autenticacao/eu`
+O backend usa `sequelize.sync({ alter: true })` somente em `development`. Assim, ao iniciar esta versao, as novas colunas e tabelas sao aplicadas ao banco de desenvolvimento existente.
 
-### Prestadores
-- `GET /api/prestadores`
-- `GET /api/prestadores/:id`
-- `PUT /api/prestadores/meu-perfil`
+Antes de atualizar, e recomendavel manter uma copia do projeto anterior. Em ambiente de producao, devem ser usadas migrations em vez de `sync({ alter: true })`.
 
-### Categorias
-- `GET /api/categorias`
-- `POST /api/categorias` (admin)
+## Administrador de desenvolvimento
 
-### Servicos
-- `GET /api/servicos`
-- `GET /api/servicos/:id`
-- `POST /api/servicos` (prestador)
-- `PUT /api/servicos/:id` (prestador dono)
-- `DELETE /api/servicos/:id` (prestador dono)
+O arquivo `.env.exemplo` possui:
 
-### Disponibilidade
-- `GET /api/disponibilidades/prestador/:prestadorId`
-- `POST /api/disponibilidades` (prestador)
-- `DELETE /api/disponibilidades/:id` (prestador dono)
+```text
+ADMIN_EMAIL=admin@conectatorres.local
+ADMIN_SENHA=Admin12345
+```
 
-### Agendamentos
-- `GET /api/agendamentos` (autenticado)
-- `POST /api/agendamentos` (cliente)
-- `PATCH /api/agendamentos/:id/status` (cliente/prestador, conforme regra)
+Ao iniciar o backend, essa conta e criada automaticamente se ainda nao existir. Altere os dados no `.env` antes de qualquer demonstracao publica ou deploy.
 
-### Avaliacoes
-- `GET /api/avaliacoes/prestador/:prestadorId`
-- `POST /api/avaliacoes` (cliente)
+## Uploads
 
-### Favoritos
-- `GET /api/favoritos` (cliente)
-- `POST /api/favoritos/:prestadorId` (cliente)
-- `DELETE /api/favoritos/:prestadorId` (cliente)
+Fotos e portfolio ficam em `backend/uploads/` durante o desenvolvimento. Essa pasta nao vai para o Git.
 
-### Administracao
-- `GET /api/admin/usuarios` (admin)
-- `PATCH /api/admin/usuarios/:id/ativo` (admin)
+Em um deploy real, o recomendado e migrar os arquivos para armazenamento de objetos, mantendo no PostgreSQL apenas a URL.
 
-## Seguranca implementada na base
+## Verificacao
 
-- Senhas armazenadas somente como hash bcrypt.
-- JWT salvo em cookie HTTP-only.
-- Rate limit nas rotas de autenticacao.
-- Helmet para cabecalhos HTTP de seguranca.
-- CORS restrito ao frontend configurado.
-- Validacao de entrada com `express-validator`.
-- Controle de acesso por perfil: `cliente`, `prestador` e `admin`.
-- Usuario nao pode se cadastrar como administrador pela rota publica.
-- Regras de propriedade para servicos, disponibilidades e agendamentos.
+Backend:
 
-## Sobre a LLM
+```powershell
+cd backend
+npm run verificar
+```
 
-A integracao com IA foi deixada para uma etapa posterior. A estrutura foi preparada para adicionar um modulo de integracao sem misturar IA com as regras centrais da aplicacao.
+Frontend:
 
-Sugestao de futura pasta:
+```powershell
+cd frontend
+npm run build
+```
+
+## Git
+
+```powershell
+git init
+git add .
+git commit -m "feat: fluxo principal do ConectaTorres"
+git branch -M main
+git remote add origin URL_DO_REPOSITORIO
+git push -u origin main
+```
+
+Nunca envie `.env`, `node_modules` ou `backend/uploads` para o repositorio.
+
+## LLM
+
+A LLM permanece propositalmente fora desta versao. O fluxo principal da plataforma funciona sem IA.
+
+Quando a aplicacao estiver validada, a integracao deve entrar em:
 
 ```text
 backend/src/integracoes/llm/
 ```
 
-O fluxo recomendado e: texto do usuario -> LLM interpreta categorias/filtros -> backend valida -> PostgreSQL retorna prestadores reais.
+Fluxo planejado:
 
-## Git
-
-Depois de revisar os arquivos:
-
-```bash
-git init
-git add .
-git commit -m "chore: estrutura inicial do ConectaTorres"
-git branch -M main
-git remote add origin URL_DO_SEU_REPOSITORIO
-git push -u origin main
+```text
+texto do cliente -> LLM interpreta necessidade -> categorias/filtros estruturados -> backend valida -> PostgreSQL retorna prestadores reais
 ```
 
-Nunca envie os arquivos `.env` para o repositorio.
+A LLM nao deve inventar prestadores, precos, agenda ou avaliacoes.

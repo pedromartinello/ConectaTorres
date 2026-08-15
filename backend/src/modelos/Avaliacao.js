@@ -10,11 +10,8 @@ Avaliacao.init(
     clienteId: { type: DataTypes.UUID, allowNull: false, field: 'cliente_id' },
     prestadorId: { type: DataTypes.UUID, allowNull: false, field: 'prestador_id' },
     nota: { type: DataTypes.INTEGER, allowNull: false, validate: { min: 1, max: 5 } },
-    comentario: { type: DataTypes.TEXT, allowNull: true }
+    comentario: { type: DataTypes.TEXT, allowNull: true },
+    visivel: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }
   },
-  {
-    sequelize,
-    modelName: 'Avaliacao',
-    tableName: 'avaliacoes'
-  }
+  { sequelize, modelName: 'Avaliacao', tableName: 'avaliacoes' }
 );

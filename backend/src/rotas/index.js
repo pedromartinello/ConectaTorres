@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import autenticacaoRotas from './autenticacaoRotas.js';
+import usuarioRotas from './usuarioRotas.js';
 import categoriaRotas from './categoriaRotas.js';
 import prestadorRotas from './prestadorRotas.js';
 import servicoRotas from './servicoRotas.js';
@@ -7,15 +8,14 @@ import disponibilidadeRotas from './disponibilidadeRotas.js';
 import agendamentoRotas from './agendamentoRotas.js';
 import avaliacaoRotas from './avaliacaoRotas.js';
 import favoritoRotas from './favoritoRotas.js';
+import notificacaoRotas from './notificacaoRotas.js';
+import denunciaRotas from './denunciaRotas.js';
 import adminRotas from './adminRotas.js';
 
 const router = Router();
-
-router.get('/saude', (req, res) => {
-  res.json({ status: 'ok', aplicacao: 'ConectaTorres API' });
-});
-
+router.get('/saude', (req, res) => res.json({ status: 'ok', aplicacao: 'ConectaTorres API', versao: '0.3.0' }));
 router.use('/autenticacao', autenticacaoRotas);
+router.use('/usuarios', usuarioRotas);
 router.use('/categorias', categoriaRotas);
 router.use('/prestadores', prestadorRotas);
 router.use('/servicos', servicoRotas);
@@ -23,6 +23,7 @@ router.use('/disponibilidades', disponibilidadeRotas);
 router.use('/agendamentos', agendamentoRotas);
 router.use('/avaliacoes', avaliacaoRotas);
 router.use('/favoritos', favoritoRotas);
+router.use('/notificacoes', notificacaoRotas);
+router.use('/denuncias', denunciaRotas);
 router.use('/admin', adminRotas);
-
 export default router;

@@ -1,26 +1,34 @@
 import { Usuario } from '../modelos/index.js';
 import { verificarToken } from '../utilitarios/token.js';
 
+async function resolverUsuario(req) {
+  const cabecalho = req.headers.authorization;
+  const tokenBearer = cabecalho?.startsWith('Bearer ') ? cabecalho.slice(7) : null;
+  const token = req.cookies?.token || tokenBearer;
+  if (!token) return null;
+  const payload = verificarToken(token);
+  return Usuario.findByPk(payload.sub);
+}
+
 export async function exigirAutenticacao(req, res, next) {
   try {
-    const cabecalho = req.headers.authorization;
-    const tokenBearer = cabecalho?.startsWith('Bearer ') ? cabecalho.slice(7) : null;
-    const token = req.cookies?.token || tokenBearer;
-
-    if (!token) {
-      return res.status(401).json({ mensagem: 'Autenticacao necessaria.' });
-    }
-
-    const payload = verificarToken(token);
-    const usuario = await Usuario.findByPk(payload.sub);
-
+    const usuario = await resolverUsuario(req);
     if (!usuario || !usuario.ativo) {
-      return res.status(401).json({ mensagem: 'Usuario invalido ou inativo.' });
+      return res.status(401).json({ mensagem: 'Usuario invalido, inativo ou nao autenticado.' });
     }
-
     req.usuario = usuario;
     return next();
   } catch {
     return res.status(401).json({ mensagem: 'Sessao invalida ou expirada.' });
   }
+}
+
+export async function autenticacaoOpcional(req, res, next) {
+  try {
+    const usuario = await resolverUsuario(req);
+    if (usuario?.ativo) req.usuario = usuario;
+  } catch {
+    req.usuario = null;
+  }
+  return next();
 }

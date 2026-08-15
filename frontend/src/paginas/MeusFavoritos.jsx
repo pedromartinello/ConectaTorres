@@ -1,0 +1,5 @@
+import { useEffect, useState } from 'react';
+import { api } from '../servicos/api.js';
+import { CartaoPrestador } from '../componentes/CartaoPrestador.jsx';
+
+export function MeusFavoritos(){const[favoritos,setFavoritos]=useState([]);const[erro,setErro]=useState('');async function carregar(){const d=await api('/favoritos');setFavoritos(d.favoritos);}useEffect(()=>{carregar().catch(e=>setErro(e.message));},[]);async function remover(p){try{await api(`/favoritos/${p.id}`,{method:'DELETE'});await carregar();}catch(e){setErro(e.message);}}return <div><div className="titulo-secao"><span className="rotulo">Cliente</span><h1>Meus favoritos</h1><p className="texto-suave">Profissionais que voce salvou para consultar depois.</p></div>{erro&&<div className="alerta erro">{erro}</div>}<div className="grade-cards">{favoritos.map(f=><CartaoPrestador key={f.id} prestador={f.prestador} podeFavoritar aoFavoritar={remover}/>)}{!favoritos.length&&<div className="vazio">Voce ainda nao favoritou nenhum prestador.</div>}</div></div>}

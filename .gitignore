@@ -6,9 +6,12 @@ node_modules/
 .env.local
 .env.*.local
 
-# Builds
-build/
+# Uploads locais de usuarios
+backend/uploads/
+
+# Builds e testes
 dist/
+build/
 coverage/
 
 # Logs
@@ -23,6 +26,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Arquivos temporarios
+# Temporarios
 *.tmp
 *.swp

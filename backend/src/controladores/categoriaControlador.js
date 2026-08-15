@@ -1,13 +1,8 @@
 import { Categoria } from '../modelos/index.js';
 
 function criarSlug(texto) {
-  return texto
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
 export async function listarCategorias(req, res) {

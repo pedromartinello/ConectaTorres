@@ -29,5 +29,10 @@ export const ambiente = {
   jwt: {
     segredo: process.env.JWT_SEGREDO,
     expiracao: process.env.JWT_EXPIRACAO || '8h'
+  },
+  admin: {
+    nome: process.env.ADMIN_NOME || '',
+    email: process.env.ADMIN_EMAIL || '',
+    senha: process.env.ADMIN_SENHA || ''
   }
 };

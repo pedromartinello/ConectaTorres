@@ -22,9 +22,5 @@ PerfilPrestador.init(
     valorReferencia: { type: DataTypes.DECIMAL(10, 2), allowNull: true, field: 'valor_referencia' },
     fotoUrl: { type: DataTypes.STRING(500), allowNull: true, field: 'foto_url' }
   },
-  {
-    sequelize,
-    modelName: 'PerfilPrestador',
-    tableName: 'perfis_prestador'
-  }
+  { sequelize, modelName: 'PerfilPrestador', tableName: 'perfis_prestador' }
 );

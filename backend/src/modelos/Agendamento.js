@@ -16,11 +16,8 @@ Agendamento.init(
       type: DataTypes.ENUM('pendente', 'aceito', 'recusado', 'cancelado'),
       allowNull: false,
       defaultValue: 'pendente'
-    }
+    },
+    concluidoEm: { type: DataTypes.DATE, allowNull: true, field: 'concluido_em' }
   },
-  {
-    sequelize,
-    modelName: 'Agendamento',
-    tableName: 'agendamentos'
-  }
+  { sequelize, modelName: 'Agendamento', tableName: 'agendamentos' }
 );

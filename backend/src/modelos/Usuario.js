@@ -16,42 +16,20 @@ export class Usuario extends Model {
 
 Usuario.init(
   {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
-    },
-    nome: {
-      type: DataTypes.STRING(120),
-      allowNull: false
-    },
-    email: {
-      type: DataTypes.STRING(180),
-      allowNull: false,
-      unique: true,
-      validate: { isEmail: true }
-    },
-    senhaHash: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      field: 'senha_hash'
-    },
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    nome: { type: DataTypes.STRING(120), allowNull: false },
+    email: { type: DataTypes.STRING(180), allowNull: false, unique: true, validate: { isEmail: true } },
+    telefone: { type: DataTypes.STRING(30), allowNull: true },
+    fotoUrl: { type: DataTypes.STRING(500), allowNull: true, field: 'foto_url' },
+    senhaHash: { type: DataTypes.STRING, allowNull: false, field: 'senha_hash' },
     tipo: {
       type: DataTypes.ENUM('cliente', 'prestador', 'admin'),
       allowNull: false,
       defaultValue: 'cliente'
     },
-    ativo: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true
-    }
+    ativo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true }
   },
-  {
-    sequelize,
-    modelName: 'Usuario',
-    tableName: 'usuarios'
-  }
+  { sequelize, modelName: 'Usuario', tableName: 'usuarios' }
 );
 
 Usuario.beforeCreate(async (usuario) => {

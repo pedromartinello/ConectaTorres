@@ -3,10 +3,8 @@ import { useAutenticacao } from '../contextos/ContextoAutenticacao.jsx';
 
 export function RotaProtegida({ children, tipos }) {
   const { usuario, carregando } = useAutenticacao();
-
-  if (carregando) return <div className="container espaco-topo">Carregando...</div>;
+  if (carregando) return <main className="container secao"><div className="vazio">Carregando...</div></main>;
   if (!usuario) return <Navigate to="/entrar" replace />;
-  if (tipos && !tipos.includes(usuario.tipo)) return <Navigate to="/" replace />;
-
+  if (tipos?.length && !tipos.includes(usuario.tipo)) return <Navigate to="/painel" replace />;
   return children;
 }

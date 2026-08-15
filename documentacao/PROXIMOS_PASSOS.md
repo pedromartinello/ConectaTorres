@@ -1,44 +1,23 @@
 # Proximos passos
 
-## Etapa 1 - Base funcional
-- [x] Estrutura frontend/backend separada.
-- [x] PostgreSQL + Sequelize.
-- [x] Cadastro e login.
-- [x] Perfis cliente/prestador/admin.
-- [x] GET de categorias, servicos, prestadores e detalhes.
-- [x] Perfil do prestador.
-- [x] Cadastro de servicos.
-- [x] Disponibilidade.
-- [x] Solicitacao de agendamento.
-- [x] Avaliacoes no backend.
-- [x] Favoritos no backend.
-- [x] Administracao basica no backend.
+O fluxo principal do ConectaTorres esta implementado. A proxima grande etapa funcional fica propositalmente reservada para a LLM.
 
-## Etapa 2 - Refinamento
-- [ ] Tela de favoritos.
-- [ ] Tela para cliente registrar avaliacao apos atendimento.
-- [ ] Tela administrativa.
-- [ ] Edicao/exclusao visual de servicos e disponibilidades.
-- [ ] Upload de imagens do portfolio.
-- [ ] Paginacao e ordenacao dos resultados.
-- [ ] Testes automatizados.
-- [ ] Migracoes formais do banco no lugar de `sequelize.sync()`.
-- [ ] Recuperacao de senha por e-mail.
-- [ ] Verificacao de e-mail.
-- [ ] Melhorias de acessibilidade.
+## Antes da LLM
 
-## Etapa 3 - LLM
-- [ ] Criar modulo de integracao.
-- [ ] Interpretar texto do cliente em categorias e filtros estruturados.
-- [ ] Validar o JSON retornado pela LLM.
-- [ ] Executar a busca real somente no PostgreSQL.
-- [ ] Adicionar recurso opcional de melhoria da descricao do prestador.
+- Executar o roteiro de testes manuais.
+- Inserir dados reais ou dados de demonstracao.
+- Revisar textos e identidade visual final.
+- Criar o repositorio Git e registrar commits por etapa.
+- Fazer uma rodada de testes de usabilidade.
 
-## Etapa 4 - Entrega academica
-- [ ] Testes funcionais.
-- [ ] Testes de usabilidade.
-- [ ] Evidencias e capturas de tela.
-- [ ] Documentacao de API.
-- [ ] Diagramas atualizados.
-- [ ] Artigo final.
-- [ ] Apresentacao.
+## Etapa final: LLM
+
+Criar `backend/src/integracoes/llm/` com responsabilidades separadas:
+
+- cliente da API de LLM;
+- prompts;
+- interpretacao da necessidade;
+- validacao do retorno estruturado;
+- conversao em filtros da busca.
+
+A IA deve interpretar a solicitacao, mas os prestadores, precos, disponibilidade e avaliacoes devem continuar vindo do PostgreSQL.

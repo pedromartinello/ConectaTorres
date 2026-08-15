@@ -4,15 +4,19 @@ const categoriasPadrao = [
   ['Eletricista', 'eletricista'],
   ['Encanador', 'encanador'],
   ['Pintor', 'pintor'],
-  ['Pedreiro', 'pedreiro'],
   ['Diarista', 'diarista'],
   ['Jardineiro', 'jardineiro'],
+  ['Pedreiro', 'pedreiro'],
+  ['Marceneiro', 'marceneiro'],
   ['Montador de moveis', 'montador-de-moveis'],
-  ['Tecnico de informatica', 'tecnico-de-informatica']
+  ['Tecnico de informatica', 'tecnico-de-informatica'],
+  ['Ar condicionado', 'ar-condicionado'],
+  ['Manutencao residencial', 'manutencao-residencial'],
+  ['Limpeza', 'limpeza']
 ];
 
 export async function semearCategorias() {
   for (const [nome, slug] of categoriasPadrao) {
-    await Categoria.findOrCreate({ where: { slug }, defaults: { nome, slug } });
+    await Categoria.findOrCreate({ where: { slug }, defaults: { nome, ativa: true } });
   }
 }

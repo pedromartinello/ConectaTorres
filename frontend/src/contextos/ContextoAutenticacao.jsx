@@ -15,19 +15,13 @@ export function ProvedorAutenticacao({ children }) {
   }, []);
 
   async function entrar(email, senha) {
-    const dados = await api('/autenticacao/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, senha })
-    });
+    const dados = await api('/autenticacao/login', { method: 'POST', body: JSON.stringify({ email, senha }) });
     setUsuario(dados.usuario);
     return dados.usuario;
   }
 
   async function cadastrar(dadosCadastro) {
-    const dados = await api('/autenticacao/cadastro', {
-      method: 'POST',
-      body: JSON.stringify(dadosCadastro)
-    });
+    const dados = await api('/autenticacao/cadastro', { method: 'POST', body: JSON.stringify(dadosCadastro) });
     setUsuario(dados.usuario);
     return dados.usuario;
   }
@@ -40,17 +34,10 @@ export function ProvedorAutenticacao({ children }) {
   async function recarregarUsuario() {
     const dados = await api('/autenticacao/eu');
     setUsuario(dados.usuario);
+    return dados.usuario;
   }
 
-  const valor = useMemo(() => ({
-    usuario,
-    carregando,
-    entrar,
-    cadastrar,
-    sair,
-    recarregarUsuario
-  }), [usuario, carregando]);
-
+  const valor = useMemo(() => ({ usuario, carregando, entrar, cadastrar, sair, recarregarUsuario }), [usuario, carregando]);
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;
 }
 

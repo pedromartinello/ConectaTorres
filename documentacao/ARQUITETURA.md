@@ -3,24 +3,28 @@
 ## Camadas
 
 ### Frontend
-Responsavel pela interface, navegacao, formularios, experiencia do usuario e consumo da API.
+React + Vite. Responsavel pela interface, navegacao, formularios, filtros, paineis por perfil e consumo da API.
 
-### Backend / API
-Responsavel por autenticacao, autorizacao, regras de negocio, validacoes, agenda, busca, avaliacoes e acesso ao banco.
+### Backend
+Node.js + Express. Centraliza autenticacao, autorizacao, validacao, regras de negocio, agenda, moderacao, notificacoes e upload de imagens.
 
-### Banco de dados
-PostgreSQL gerenciado por Sequelize. Os dados objetivos da plataforma ficam aqui.
+### Banco
+PostgreSQL com Sequelize. Mantem os dados objetivos da plataforma.
+
+### Uploads
+No desenvolvimento, imagens ficam em `backend/uploads`. O banco armazena apenas o caminho da imagem.
 
 ### Integracoes externas
-A integracao com WhatsApp e apenas um redirecionamento. A futura integracao com LLM deve ficar isolada em uma pasta propria e nunca ser fonte de dados cadastrais.
+- WhatsApp: redirecionamento externo.
+- LLM: futura, isolada do fluxo principal.
 
 ## Perfis
 
-- `cliente`: pesquisa, agenda, favorita e avalia.
-- `prestador`: mantem perfil, servicos e disponibilidade; responde solicitacoes.
-- `admin`: manutencao e moderacao basica.
+- `cliente`: pesquisa, filtra, favorita, solicita horarios, acompanha atendimentos, avalia e denuncia conteudo.
+- `prestador`: mantem perfil, portfolio, servicos e disponibilidade; responde solicitacoes e conclui atendimentos.
+- `admin`: gerencia usuarios, categorias, denuncias e moderacao de avaliacoes.
 
-## Entidades iniciais
+## Entidades
 
 - Usuario
 - PerfilPrestador
@@ -30,12 +34,17 @@ A integracao com WhatsApp e apenas um redirecionamento. A futura integracao com 
 - Agendamento
 - Avaliacao
 - Favorito
+- PortfolioImagem
+- Notificacao
+- Denuncia
 
 ## Convencoes
 
 - Nomes de pastas, arquivos, rotas e variaveis em portugues sem acentos.
-- API REST sob o prefixo `/api`.
+- API REST no prefixo `/api`.
 - JSON em camelCase.
-- Banco com nomes em snake_case.
+- Banco em snake_case.
 - IDs UUID.
-- Regra de negocio fica no backend, nunca apenas no frontend.
+- Regra de negocio no backend.
+- Senha nunca retornada pela API.
+- Uploads validam formato e tamanho.
