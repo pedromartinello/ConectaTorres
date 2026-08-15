@@ -1,0 +1,16 @@
+services:
+  banco:
+    image: postgres:16-alpine
+    container_name: conectatorres-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: conectatorres
+      POSTGRES_USER: conectatorres
+      POSTGRES_PASSWORD: conectatorres_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - conectatorres_dados:/var/lib/postgresql/data
+
+volumes:
+  conectatorres_dados:
