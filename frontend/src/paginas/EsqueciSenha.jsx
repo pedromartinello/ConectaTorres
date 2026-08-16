@@ -7,6 +7,7 @@ export function EsqueciSenha() {
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
   const [link, setLink] = useState('');
+  const [avisoDesenvolvimento, setAvisoDesenvolvimento] = useState('');
   const [enviando, setEnviando] = useState(false);
 
   async function enviar(evento) {
@@ -14,6 +15,7 @@ export function EsqueciSenha() {
     setErro('');
     setMensagem('');
     setLink('');
+    setAvisoDesenvolvimento('');
     setEnviando(true);
     try {
       const dados = await api('/autenticacao/esqueci-senha', {
@@ -22,6 +24,7 @@ export function EsqueciSenha() {
       });
       setMensagem(dados.mensagem);
       setLink(dados.linkRedefinicao || '');
+      setAvisoDesenvolvimento(dados.avisoDesenvolvimento || '');
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -51,7 +54,7 @@ export function EsqueciSenha() {
         {link && (
           <div className="alerta informacao">
             <strong>Ambiente de desenvolvimento:</strong>
-            <p>O envio por e-mail ainda não faz parte do protótipo. Use o link abaixo para testar o fluxo completo.</p>
+            <p>{avisoDesenvolvimento || 'O SMTP ainda não está configurado neste ambiente. Use o link abaixo somente para testar o fluxo local.'}</p>
             <a className="link-destaque quebra-link" href={link}>Abrir redefinição de senha →</a>
           </div>
         )}

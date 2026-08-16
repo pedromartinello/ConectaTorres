@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { api } from '../servicos/api.js';
 import { CartaoPrestador } from '../componentes/CartaoPrestador.jsx';
 import { Paginacao } from '../componentes/Paginacao.jsx';
 import { useAutenticacao } from '../contextos/ContextoAutenticacao.jsx';
 
-const chaves = ['busca', 'categoria', 'cidade', 'preco_max', 'avaliacao_min', 'disponivel_em', 'ordenar'];
+const chaves = ['busca', 'categoria', 'categorias', 'cidade', 'preco_max', 'avaliacao_min', 'disponivel_em', 'ordenar'];
 
 export function Prestadores() {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
   const [prestadores, setPrestadores] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [paginacao, setPaginacao] = useState(null);
@@ -21,6 +22,8 @@ export function Prestadores() {
     [params]
   );
   const pagina = Number(params.get('pagina') || 1);
+  const buscaIA = location.state?.buscaIA;
+  const usandoIA = params.get('ia') === '1' && Boolean(valores.categorias);
 
   useEffect(() => {
     api('/categorias').then((d) => setCategorias(d.categorias)).catch(() => {});
@@ -46,6 +49,10 @@ export function Prestadores() {
     const novos = new URLSearchParams(params);
     if (valor) novos.set(chave, valor); else novos.delete(chave);
     novos.delete('pagina');
+    if (chave === 'categoria') {
+      novos.delete('categorias');
+      novos.delete('ia');
+    }
     setParams(novos);
   }
 
@@ -68,6 +75,9 @@ export function Prestadores() {
     }
   }
 
+  const slugsIA = valores.categorias.split(',').filter(Boolean);
+  const nomesIA = slugsIA.map((slug) => categorias.find((c) => c.slug === slug)?.nome || slug);
+
   return (
     <main className="container secao">
       <div className="titulo-secao">
@@ -75,6 +85,19 @@ export function Prestadores() {
         <h1>Prestadores de serviços</h1>
         <p className="texto-suave">Use os filtros para encontrar profissionais compatíveis com o que você precisa.</p>
       </div>
+
+      {usandoIA && (
+        <section className="resultado-ia">
+          <div>
+            <span className="rotulo">✦ Busca assistida por IA</span>
+            <h2>{buscaIA?.mensagem || 'Categorias identificadas a partir da sua necessidade.'}</h2>
+            {buscaIA?.descricao && <p className="texto-suave">“{buscaIA.descricao}”</p>}
+          </div>
+          <div className="chips-ia">{nomesIA.map((nome) => <span key={nome}>{nome}</span>)}</div>
+          <p className="ajuda-campo">A IA selecionou categorias. Os profissionais, preços, avaliações e disponibilidade abaixo vêm apenas dos dados cadastrados no ConectaTorres.</p>
+        </section>
+      )}
+
       <section className="filtros-avancados">
         <div className="filtro-largo"><label>Buscar<input value={valores.busca} onChange={(e) => atualizar('busca', e.target.value)} placeholder="Serviço ou nome do profissional" /></label></div>
         <label>Categoria<select value={valores.categoria} onChange={(e) => atualizar('categoria', e.target.value)}><option value="">Todas</option>{categorias.map((c) => <option key={c.id} value={c.slug}>{c.nome}</option>)}</select></label>

@@ -33,6 +33,7 @@ export async function listarPrestadores(req, res) {
     busca,
     cidade,
     categoria,
+    categorias: categoriasCsv,
     avaliacao_min: avaliacaoMin,
     preco_max: precoMax,
     disponivel_em: disponivelEm,
@@ -101,7 +102,18 @@ export async function listarPrestadores(req, res) {
     return json;
   });
 
-  if (categoria) {
+  const categoriasMultiplas = String(categoriasCsv || '')
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  if (categoriasMultiplas.length) {
+    const aceitas = new Set(categoriasMultiplas);
+    prestadores = prestadores.filter((item) => item.servicos.some((servico) =>
+      aceitas.has(servico.categoria?.slug?.toLowerCase())
+    ));
+  } else if (categoria) {
     const termo = categoria.toLowerCase();
     prestadores = prestadores.filter((item) => item.servicos.some((servico) =>
       servico.categoria?.slug?.toLowerCase() === termo ||

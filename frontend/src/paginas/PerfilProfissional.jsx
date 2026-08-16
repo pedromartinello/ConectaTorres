@@ -4,12 +4,147 @@ import { useAutenticacao } from '../contextos/ContextoAutenticacao.jsx';
 
 export function PerfilProfissional() {
   const { usuario, recarregarUsuario } = useAutenticacao();
-  const [perfil, setPerfil] = useState(usuario.perfilPrestador || {}); const [portfolio, setPortfolio] = useState([]); const [legenda, setLegenda] = useState(''); const [imagem, setImagem] = useState(null); const [mensagem, setMensagem] = useState(''); const [erro, setErro] = useState('');
-  async function carregarPortfolio() { const d = await api('/prestadores/meu-portfolio'); setPortfolio(d.portfolio); }
-  useEffect(() => { carregarPortfolio().catch((e) => setErro(e.message)); }, []);
-  async function salvar(e) { e.preventDefault(); setErro(''); setMensagem(''); try { await api('/prestadores/meu-perfil', { method: 'PUT', body: JSON.stringify({ ...perfil, valorReferencia: perfil.valorReferencia || null }) }); await recarregarUsuario(); setMensagem('Perfil profissional atualizado.'); } catch (x) { setErro(x.message); } }
-  async function adicionarImagem(e) { e.preventDefault(); if (!imagem) return setErro('Escolha uma imagem para o portfólio.'); const dados = new FormData(); dados.append('imagem', imagem); dados.append('legenda', legenda); try { await api('/prestadores/meu-portfolio', { method: 'POST', body: dados }); setImagem(null); setLegenda(''); e.target.reset(); await carregarPortfolio(); setMensagem('Imagem adicionada ao portfólio.'); } catch (x) { setErro(x.message); } }
-  async function remover(id) { if (!confirm('Remover esta imagem do portfólio?')) return; try { await api(`/prestadores/meu-portfolio/${id}`, { method: 'DELETE' }); await carregarPortfolio(); } catch (x) { setErro(x.message); } }
+  const [perfil, setPerfil] = useState(usuario.perfilPrestador || {});
+  const [portfolio, setPortfolio] = useState([]);
+  const [legenda, setLegenda] = useState('');
+  const [imagem, setImagem] = useState(null);
+  const [mensagem, setMensagem] = useState('');
+  const [erro, setErro] = useState('');
+  const [gerandoDescricao, setGerandoDescricao] = useState(false);
+  const [iaConfigurada, setIaConfigurada] = useState(null);
 
-  return <div><div className="titulo-secao"><span className="rotulo">Prestador</span><h1>Perfil profissional</h1><p className="texto-suave">Estas informações aparecem para os clientes na busca e no seu perfil público.</p></div>{mensagem && <div className="alerta sucesso">{mensagem}</div>}{erro && <div className="alerta erro">{erro}</div>}<section className="formulario-cartao"><form className="formulario" onSubmit={salvar}><div className="grade-dois"><label>Título profissional<input value={perfil.titulo || ''} onChange={(e) => setPerfil({ ...perfil, titulo: e.target.value })} placeholder="Ex.: Eletricista residencial" /></label><label>WhatsApp<input value={perfil.whatsapp || ''} onChange={(e) => setPerfil({ ...perfil, whatsapp: e.target.value })} placeholder="5551999999999" /></label><label>Cidade<input value={perfil.cidade || ''} onChange={(e) => setPerfil({ ...perfil, cidade: e.target.value })} placeholder="Torres" /></label><label>Estado<input maxLength="2" value={perfil.estado || 'RS'} onChange={(e) => setPerfil({ ...perfil, estado: e.target.value.toUpperCase() })} /></label></div><label>Região de atendimento<input value={perfil.regiaoAtendimento || ''} onChange={(e) => setPerfil({ ...perfil, regiaoAtendimento: e.target.value })} placeholder="Torres, Passo de Torres e região" /></label><label>Descrição<textarea rows="6" maxLength="3000" value={perfil.descricao || ''} onChange={(e) => setPerfil({ ...perfil, descricao: e.target.value })} placeholder="Conte sua experiência e os tipos de trabalho que realiza." /></label><div className="grade-dois"><label>Forma de orçamento<select value={perfil.modalidadeOrcamento || 'orcamento'} onChange={(e) => setPerfil({ ...perfil, modalidadeOrcamento: e.target.value })}><option value="orcamento">Sob orçamento</option><option value="hora">Por hora</option><option value="servico">Por serviço</option></select></label><label>Valor de referência<input type="number" min="0" step="0.01" value={perfil.valorReferencia || ''} onChange={(e) => setPerfil({ ...perfil, valorReferencia: e.target.value })} placeholder="Opcional" /></label></div><button className="botao largura-botao">Salvar perfil</button></form></section><section className="secao-interna"><div className="titulo-linha"><div><h2>Portfólio</h2><p className="texto-suave">Adicione até 12 imagens dos seus trabalhos.</p></div><span className="contador">{portfolio.length}/12</span></div><form className="formulario-cartao formulario" onSubmit={adicionarImagem}><div className="grade-dois"><label>Imagem<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImagem(e.target.files?.[0] || null)} /></label><label>Legenda<input maxLength="200" value={legenda} onChange={(e) => setLegenda(e.target.value)} placeholder="Ex.: Instalação elétrica residencial" /></label></div><button className="botao largura-botao" disabled={portfolio.length >= 12}>Adicionar ao portfólio</button></form><div className="grade-portfolio secao-interna-pequena">{portfolio.map((item) => <figure key={item.id} className="portfolio-editavel"><img src={urlMidia(item.imagemUrl)} alt={item.legenda || 'Portfólio'} /><figcaption>{item.legenda || 'Sem legenda'}</figcaption><button className="botao-icone botao-remover-imagem" onClick={() => remover(item.id)} title="Remover">×</button></figure>)}{!portfolio.length && <div className="vazio">Seu portfólio ainda está vazio.</div>}</div></section></div>;
+  async function carregarPortfolio() {
+    const d = await api('/prestadores/meu-portfolio');
+    setPortfolio(d.portfolio);
+  }
+
+  useEffect(() => {
+    carregarPortfolio().catch((e) => setErro(e.message));
+    api('/ia/status').then((d) => setIaConfigurada(Boolean(d.configurada))).catch(() => setIaConfigurada(false));
+  }, []);
+
+  async function salvar(e) {
+    e.preventDefault();
+    setErro('');
+    setMensagem('');
+    try {
+      await api('/prestadores/meu-perfil', {
+        method: 'PUT',
+        body: JSON.stringify({ ...perfil, valorReferencia: perfil.valorReferencia || null })
+      });
+      await recarregarUsuario();
+      setMensagem('Perfil profissional atualizado.');
+    } catch (x) {
+      setErro(x.message);
+    }
+  }
+
+  async function melhorarDescricao() {
+    setErro('');
+    setMensagem('');
+    setGerandoDescricao(true);
+    try {
+      const dados = await api('/ia/sugerir-descricao-perfil', {
+        method: 'POST',
+        body: JSON.stringify({
+          titulo: perfil.titulo || '',
+          descricao: perfil.descricao || '',
+          cidade: perfil.cidade || '',
+          regiaoAtendimento: perfil.regiaoAtendimento || ''
+        })
+      });
+      setPerfil((atual) => ({ ...atual, descricao: dados.descricao }));
+      setMensagem('A IA gerou uma sugestão. Revise o texto e clique em “Salvar perfil” para publicar.');
+    } catch (x) {
+      setErro(x.message);
+    } finally {
+      setGerandoDescricao(false);
+    }
+  }
+
+  async function adicionarImagem(e) {
+    e.preventDefault();
+    if (!imagem) return setErro('Escolha uma imagem para o portfólio.');
+    const dados = new FormData();
+    dados.append('imagem', imagem);
+    dados.append('legenda', legenda);
+    try {
+      await api('/prestadores/meu-portfolio', { method: 'POST', body: dados });
+      setImagem(null);
+      setLegenda('');
+      e.target.reset();
+      await carregarPortfolio();
+      setMensagem('Imagem adicionada ao portfólio.');
+    } catch (x) {
+      setErro(x.message);
+    }
+  }
+
+  async function remover(id) {
+    if (!confirm('Remover esta imagem do portfólio?')) return;
+    try {
+      await api(`/prestadores/meu-portfolio/${id}`, { method: 'DELETE' });
+      await carregarPortfolio();
+    } catch (x) {
+      setErro(x.message);
+    }
+  }
+
+  return (
+    <div>
+      <div className="titulo-secao">
+        <span className="rotulo">Prestador</span>
+        <h1>Perfil profissional</h1>
+        <p className="texto-suave">Estas informações aparecem para os clientes na busca e no seu perfil público.</p>
+      </div>
+      {mensagem && <div className="alerta sucesso">{mensagem}</div>}
+      {erro && <div className="alerta erro">{erro}</div>}
+
+      <section className="formulario-cartao">
+        <form className="formulario" onSubmit={salvar}>
+          <div className="grade-dois">
+            <label>Título profissional<input value={perfil.titulo || ''} onChange={(e) => setPerfil({ ...perfil, titulo: e.target.value })} placeholder="Ex.: Eletricista residencial" /></label>
+            <label>WhatsApp<input value={perfil.whatsapp || ''} onChange={(e) => setPerfil({ ...perfil, whatsapp: e.target.value })} placeholder="5551999999999" /></label>
+            <label>Cidade<input value={perfil.cidade || ''} onChange={(e) => setPerfil({ ...perfil, cidade: e.target.value })} placeholder="Torres" /></label>
+            <label>Estado<input maxLength="2" value={perfil.estado || 'RS'} onChange={(e) => setPerfil({ ...perfil, estado: e.target.value.toUpperCase() })} /></label>
+          </div>
+          <label>Região de atendimento<input value={perfil.regiaoAtendimento || ''} onChange={(e) => setPerfil({ ...perfil, regiaoAtendimento: e.target.value })} placeholder="Torres, Passo de Torres e região" /></label>
+          <label>
+            Descrição
+            <textarea rows="6" maxLength="3000" value={perfil.descricao || ''} onChange={(e) => setPerfil({ ...perfil, descricao: e.target.value })} placeholder="Conte sua experiência e os tipos de trabalho que realiza." />
+          </label>
+          <div className="linha-ia-perfil">
+            <p className="ajuda-campo">A sugestão da IA nunca é publicada automaticamente. Você pode editar o texto antes de salvar.</p>
+            <button type="button" className="botao-secundario" onClick={melhorarDescricao} disabled={gerandoDescricao || iaConfigurada === false}>
+              {gerandoDescricao ? 'Gerando sugestão...' : '✦ Melhorar descrição com IA'}
+            </button>
+          </div>
+          {iaConfigurada === false && <p className="ajuda-campo">Integração com IA ainda não configurada no backend.</p>}
+          <div className="grade-dois">
+            <label>Forma de orçamento<select value={perfil.modalidadeOrcamento || 'orcamento'} onChange={(e) => setPerfil({ ...perfil, modalidadeOrcamento: e.target.value })}><option value="orcamento">Sob orçamento</option><option value="hora">Por hora</option><option value="servico">Por serviço</option></select></label>
+            <label>Valor de referência<input type="number" min="0" step="0.01" value={perfil.valorReferencia || ''} onChange={(e) => setPerfil({ ...perfil, valorReferencia: e.target.value })} placeholder="Opcional" /></label>
+          </div>
+          <button className="botao largura-botao">Salvar perfil</button>
+        </form>
+      </section>
+
+      <section className="secao-interna">
+        <div className="titulo-linha">
+          <div><h2>Portfólio</h2><p className="texto-suave">Adicione até 12 imagens dos seus trabalhos.</p></div>
+          <span className="contador">{portfolio.length}/12</span>
+        </div>
+        <form className="formulario-cartao formulario" onSubmit={adicionarImagem}>
+          <div className="grade-dois">
+            <label>Imagem<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImagem(e.target.files?.[0] || null)} /></label>
+            <label>Legenda<input maxLength="200" value={legenda} onChange={(e) => setLegenda(e.target.value)} placeholder="Ex.: Instalação elétrica residencial" /></label>
+          </div>
+          <button className="botao largura-botao" disabled={portfolio.length >= 12}>Adicionar ao portfólio</button>
+        </form>
+        <div className="grade-portfolio secao-interna-pequena">
+          {portfolio.map((item) => <figure key={item.id} className="portfolio-editavel"><img src={urlMidia(item.imagemUrl)} alt={item.legenda || 'Portfólio'} /><figcaption>{item.legenda || 'Sem legenda'}</figcaption><button className="botao-icone botao-remover-imagem" onClick={() => remover(item.id)} title="Remover">×</button></figure>)}
+          {!portfolio.length && <div className="vazio">Seu portfólio ainda está vazio.</div>}
+        </div>
+      </section>
+    </div>
+  );
 }

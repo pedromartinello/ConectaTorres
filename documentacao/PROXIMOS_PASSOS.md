@@ -1,41 +1,26 @@
-# Proximos passos
+# Próximos passos
 
-A versao 0.4 fecha a etapa de estabilizacao do fluxo principal do ConectaTorres.
+A v0.5 entrega as duas integrações externas planejadas para o protótipo: LLM e e-mail de recuperação de senha.
 
-## v0.5 - Integracao com LLM
+## v1.0 - fechamento do PDS
 
-A proxima etapa planejada e adicionar a busca assistida por linguagem natural sem permitir que a IA controle dados factuais da plataforma.
+Antes de chamar o projeto de v1.0:
 
-Fluxo esperado:
+- executar o roteiro completo de testes de cliente, prestador e administrador;
+- validar busca tradicional e busca assistida por IA;
+- revisar responsividade;
+- revisar mensagens e textos em português;
+- revisar permissões e rate limits;
+- preparar dados de demonstração;
+- revisar documentação da API;
+- preparar apresentação e roteiro de demonstração.
 
-```text
-texto do cliente
-  -> API do backend
-  -> LLM interpreta necessidade
-  -> resposta estruturada com categorias/criterios
-  -> backend valida categorias e filtros
-  -> PostgreSQL consulta prestadores reais
-  -> frontend exibe resultados reais
-```
+## Evoluções futuras
 
-A LLM nao devera inventar:
-
-- prestadores;
-- valores;
-- avaliacoes;
-- disponibilidade;
-- cidade/regiao;
-- formas de contato.
-
-## Antes da v0.5
-
-Executar o roteiro de testes da v0.4 e corrigir qualquer comportamento observado no ambiente local.
-
-## Evolucoes futuras, fora do prototipo inicial
-
-- envio real de e-mail para recuperacao de senha;
+- migrations formais para produção;
 - armazenamento externo de imagens;
-- migrations de banco para producao;
-- testes automatizados de integracao e interface;
+- testes automatizados de integração e interface;
 - deploy do frontend, backend e PostgreSQL;
-- geracao de imagens de reforma, caso seja retomada como evolucao futura.
+- provedor transacional de e-mail em produção;
+- métricas de uso e custos da IA;
+- geração de imagens como evolução opcional, fora do protótipo principal.

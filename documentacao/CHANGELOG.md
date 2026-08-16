@@ -1,4 +1,15 @@
-# Changelog - ConectaTorres
+# Changelog
+
+## v0.5.0
+
+- Busca inteligente em linguagem natural integrada à OpenAI Responses API.
+- Structured Outputs para restringir a interpretação às categorias cadastradas.
+- Resultados continuam vindo do banco PostgreSQL, sem profissionais inventados pela IA.
+- Sugestão de descrição profissional com IA, sujeita à revisão do prestador.
+- Recuperação de senha por e-mail real via SMTP/Nodemailer.
+- Fallback de desenvolvimento quando SMTP não estiver configurado.
+- Status das integrações no endpoint `/api/saude`.
+- Rate limit dedicado às chamadas de IA.
 
 ## v0.4.0
 

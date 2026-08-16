@@ -335,3 +335,35 @@ tr:last-child td { border-bottom: 0; }
   .grade-horarios-publicos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bloqueio-item { align-items: flex-start; }
 }
+
+/* v0.5 - integração com IA e recuperação por e-mail */
+.secao-ia { padding-top: 34px; padding-bottom: 34px; }
+.busca-ia-cartao {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 34px;
+  align-items: center;
+  padding: 30px;
+  background: linear-gradient(135deg, #f2faf7 0%, #ffffff 58%);
+  border: 1px solid #cfe2dc;
+  border-radius: 22px;
+  box-shadow: var(--sombra);
+}
+.busca-ia-apresentacao h2 { margin: 9px 0 10px; font-size: clamp(1.7rem, 3vw, 2.35rem); letter-spacing: -.035em; }
+.busca-ia-apresentacao p { color: var(--cor-suave); line-height: 1.65; }
+.busca-ia-formulario { padding: 20px; border: 1px solid var(--cor-borda); border-radius: 16px; background: rgba(255,255,255,.94); }
+.busca-ia-formulario textarea { resize: vertical; min-height: 132px; }
+.selo-ia { margin-top: 18px; padding: 11px 13px; border-radius: 10px; background: var(--cor-primaria-clara); color: var(--cor-primaria-escura); font-size: .84rem; line-height: 1.45; }
+.contador-caracteres { margin-top: -8px; text-align: right; color: var(--cor-suave); font-size: .78rem; }
+.resultado-ia { margin-bottom: 22px; padding: 20px 22px; border: 1px solid #cfe2dc; border-radius: 16px; background: #f7fcfa; }
+.resultado-ia h2 { margin: 7px 0 6px; font-size: 1.25rem; }
+.resultado-ia > p { margin: 12px 0 0; }
+.chips-ia { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.chips-ia span { padding: 7px 10px; border-radius: 999px; background: var(--cor-primaria); color: #fff; font-size: .8rem; font-weight: 750; }
+.linha-ia-perfil { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: -4px; }
+.linha-ia-perfil .ajuda-campo { max-width: 560px; }
+
+@media (max-width: 820px) {
+  .busca-ia-cartao { grid-template-columns: 1fr; padding: 22px; }
+  .linha-ia-perfil { align-items: flex-start; flex-direction: column; }
+}

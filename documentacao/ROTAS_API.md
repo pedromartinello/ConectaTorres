@@ -107,3 +107,29 @@ limite=12
 ```
 
 As rotas administrativas de usuarios, denuncias e avaliacoes tambem aceitam `pagina` e `limite`, alem dos filtros correspondentes.
+
+## Inteligência artificial - v0.5
+
+### `GET /api/ia/status`
+Retorna se a integração com IA está configurada no backend.
+
+### `POST /api/ia/interpretar-necessidade`
+Interpreta uma descrição em linguagem natural e retorna somente categorias existentes na plataforma.
+
+Corpo:
+
+```json
+{
+  "descricao": "Preciso trocar o chuveiro e revisar duas tomadas"
+}
+```
+
+### `POST /api/ia/sugerir-descricao-perfil`
+Acesso: prestador autenticado.
+
+Gera uma sugestão de descrição com base nos dados informados pelo próprio prestador. A resposta não altera nem publica o perfil automaticamente.
+
+## Saúde da API - v0.5
+
+### `GET /api/saude`
+Além do status geral, informa se IA e SMTP estão configurados.

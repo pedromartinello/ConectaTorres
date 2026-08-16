@@ -11,9 +11,24 @@ const obrigatorias = [
 
 for (const chave of obrigatorias) {
   if (!process.env[chave]) {
-    throw new Error(`Variavel de ambiente ausente: ${chave}`);
+    throw new Error(`Variável de ambiente ausente: ${chave}`);
   }
 }
+
+function booleano(valor, padrao = false) {
+  if (valor === undefined || valor === '') return padrao;
+  return ['1', 'true', 'sim', 'yes', 'on'].includes(String(valor).toLowerCase());
+}
+
+function valorReal(valor = '') {
+  const texto = String(valor).trim();
+  if (!texto) return false;
+  return !/^(sua_|seu_|gere_|defina_|troque_)/i.test(texto);
+}
+
+const smtpUsuario = process.env.SMTP_USUARIO || '';
+const smtpSenha = process.env.SMTP_SENHA || '';
+const smtpHost = process.env.SMTP_HOST || '';
 
 export const ambiente = {
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -33,7 +48,23 @@ export const ambiente = {
   },
   recuperacaoSenha: {
     minutosExpiracao: Number(process.env.RECUPERACAO_SENHA_MINUTOS || 30),
-    exibirLinkDesenvolvimento: process.env.RECUPERACAO_EXIBIR_LINK !== 'false'
+    exibirLinkDesenvolvimento: booleano(process.env.RECUPERACAO_EXIBIR_LINK, true)
+  },
+  email: {
+    configurado: Boolean(valorReal(smtpHost) && valorReal(smtpUsuario) && valorReal(smtpSenha)),
+    host: smtpHost,
+    porta: Number(process.env.SMTP_PORTA || 465),
+    seguro: booleano(process.env.SMTP_SEGURO, true),
+    usuario: smtpUsuario,
+    senha: smtpSenha,
+    remetenteNome: process.env.EMAIL_REMETENTE_NOME || 'ConectaTorres',
+    remetenteEmail: process.env.EMAIL_REMETENTE || smtpUsuario
+  },
+  ia: {
+    habilitada: booleano(process.env.IA_HABILITADA, true),
+    configurada: valorReal(process.env.OPENAI_API_KEY),
+    apiKey: process.env.OPENAI_API_KEY || '',
+    modelo: process.env.OPENAI_MODELO || 'gpt-5.6-luna'
   },
   admin: {
     nome: process.env.ADMIN_NOME || '',

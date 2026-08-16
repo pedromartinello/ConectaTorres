@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { Usuario, PerfilPrestador } from '../modelos/index.js';
 import { gerarToken, opcoesCookieToken } from '../utilitarios/token.js';
 import { ambiente } from '../configuracao/ambiente.js';
+import { emailEstaConfigurado, enviarEmailRecuperacaoSenha } from '../servicos/emailServico.js';
 
 async function carregarUsuario(id) {
   return Usuario.findByPk(id, {
@@ -65,7 +66,7 @@ export async function solicitarRedefinicaoSenha(req, res) {
   const email = req.body.email.trim().toLowerCase();
   const usuario = await Usuario.findOne({ where: { email, ativo: true } });
   const resposta = {
-    mensagem: 'Se existir uma conta ativa com este e-mail, a recuperação de senha foi iniciada.'
+    mensagem: 'Se existir uma conta ativa com este e-mail, você receberá as instruções para redefinir a senha.'
   };
 
   if (!usuario) return res.json(resposta);
@@ -73,10 +74,31 @@ export async function solicitarRedefinicaoSenha(req, res) {
   const token = crypto.randomBytes(32).toString('hex');
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
   const expiraEm = new Date(Date.now() + ambiente.recuperacaoSenha.minutosExpiracao * 60 * 1000);
+  const linkRedefinicao = `${ambiente.frontendUrl}/redefinir-senha?token=${token}`;
   await usuario.update({ tokenRedefinicaoSenha: tokenHash, tokenRedefinicaoExpiraEm: expiraEm });
 
+  if (emailEstaConfigurado()) {
+    try {
+      await enviarEmailRecuperacaoSenha({
+        destinatario: usuario.email,
+        nome: usuario.nome,
+        link: linkRedefinicao,
+        minutos: ambiente.recuperacaoSenha.minutosExpiracao
+      });
+      return res.json(resposta);
+    } catch (erro) {
+      console.error('Falha ao enviar e-mail de recuperação:', erro.message);
+      const podeExibirLink = ambiente.nodeEnv !== 'production' && ambiente.recuperacaoSenha.exibirLinkDesenvolvimento;
+      if (!podeExibirLink) {
+        await usuario.update({ tokenRedefinicaoSenha: null, tokenRedefinicaoExpiraEm: null });
+        return res.json(resposta);
+      }
+      resposta.avisoDesenvolvimento = 'O SMTP está configurado, mas o envio falhou. Use o link local abaixo para continuar o teste.';
+    }
+  }
+
   if (ambiente.nodeEnv !== 'production' && ambiente.recuperacaoSenha.exibirLinkDesenvolvimento) {
-    resposta.linkRedefinicao = `${ambiente.frontendUrl}/redefinir-senha?token=${token}`;
+    resposta.linkRedefinicao = linkRedefinicao;
     resposta.expiraEm = expiraEm;
   }
 
