@@ -9,6 +9,8 @@ import { Favorito } from './Favorito.js';
 import { PortfolioImagem } from './PortfolioImagem.js';
 import { Notificacao } from './Notificacao.js';
 import { Denuncia } from './Denuncia.js';
+import { HorarioSemanal } from './HorarioSemanal.js';
+import { BloqueioAgenda } from './BloqueioAgenda.js';
 
 Usuario.hasOne(PerfilPrestador, { foreignKey: 'usuarioId', as: 'perfilPrestador', onDelete: 'CASCADE' });
 PerfilPrestador.belongsTo(Usuario, { foreignKey: 'usuarioId', as: 'usuario' });
@@ -20,6 +22,11 @@ Servico.belongsTo(Categoria, { foreignKey: 'categoriaId', as: 'categoria' });
 
 Usuario.hasMany(Disponibilidade, { foreignKey: 'prestadorId', as: 'disponibilidades', onDelete: 'CASCADE' });
 Disponibilidade.belongsTo(Usuario, { foreignKey: 'prestadorId', as: 'prestador' });
+
+Usuario.hasMany(HorarioSemanal, { foreignKey: 'prestadorId', as: 'horariosSemanais', onDelete: 'CASCADE' });
+HorarioSemanal.belongsTo(Usuario, { foreignKey: 'prestadorId', as: 'prestador' });
+Usuario.hasMany(BloqueioAgenda, { foreignKey: 'prestadorId', as: 'bloqueiosAgenda', onDelete: 'CASCADE' });
+BloqueioAgenda.belongsTo(Usuario, { foreignKey: 'prestadorId', as: 'prestador' });
 
 Usuario.hasMany(Agendamento, { foreignKey: 'clienteId', as: 'agendamentosComoCliente' });
 Usuario.hasMany(Agendamento, { foreignKey: 'prestadorId', as: 'agendamentosComoPrestador' });
@@ -60,5 +67,7 @@ export {
   Favorito,
   PortfolioImagem,
   Notificacao,
-  Denuncia
+  Denuncia,
+  HorarioSemanal,
+  BloqueioAgenda
 };

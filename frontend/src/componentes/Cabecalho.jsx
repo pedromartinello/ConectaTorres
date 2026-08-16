@@ -17,7 +17,7 @@ export function Cabecalho() {
     <header className="cabecalho">
       <div className="container cabecalho-conteudo">
         <Link className="marca" to="/"><span className="marca-simbolo">C</span>ConectaTorres</Link>
-        <nav className="navegacao" aria-label="Navegacao principal">
+        <nav className="navegacao" aria-label="Navegação principal">
           <NavLink to="/prestadores">Prestadores</NavLink>
           {!usuario ? (
             <>
@@ -26,7 +26,7 @@ export function Cabecalho() {
             </>
           ) : (
             <>
-              <NavLink className="link-notificacao" to="/painel/notificacoes" aria-label={`${naoLidas} notificacoes nao lidas`}>
+              <NavLink className="link-notificacao" to="/painel/notificacoes" aria-label={`${naoLidas} notificações não lidas`}>
                 <span aria-hidden="true">&#128276;</span>
                 {naoLidas > 0 && <span className="badge-notificacao">{naoLidas > 99 ? '99+' : naoLidas}</span>}
               </NavLink>

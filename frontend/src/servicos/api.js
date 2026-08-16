@@ -20,14 +20,14 @@ export async function api(caminho, opcoes = {}) {
       headers
     });
   } catch {
-    throw new Error('Nao foi possivel conectar ao servidor. Verifique se o backend esta rodando na porta 3001.');
+    throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando na porta 3001.');
   }
 
   if (resposta.status === 204) return null;
   const dados = await resposta.json().catch(() => ({}));
   if (!resposta.ok) {
     const detalhes = dados.erros?.length ? ` ${dados.erros.map((e) => e.mensagem).join(' ')}` : '';
-    const erro = new Error(`${dados.mensagem || 'Erro na comunicacao com o servidor.'}${detalhes}`.trim());
+    const erro = new Error(`${dados.mensagem || 'Erro na comunicação com o servidor.'}${detalhes}`.trim());
     erro.status = resposta.status;
     erro.dados = dados;
     throw erro;

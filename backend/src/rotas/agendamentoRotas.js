@@ -13,7 +13,6 @@ router.post('/', permitirTipos('cliente'), [
   body('prestadorId').isUUID(),
   body('servicoId').optional({ nullable: true }).isUUID(),
   body('inicio').isISO8601(),
-  body('fim').isISO8601(),
   body('descricao').optional({ nullable: true }).isLength({ max: 2000 })
 ], validarRequisicao, asyncHandler(criarAgendamento));
 router.patch('/:id/status', permitirTipos('cliente', 'prestador'), [

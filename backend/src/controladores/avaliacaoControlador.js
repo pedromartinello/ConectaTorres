@@ -29,11 +29,11 @@ export async function listarMinhasAvaliacoes(req, res) {
 export async function criarAvaliacao(req, res) {
   const { agendamentoId, nota, comentario } = req.body;
   const agendamento = await Agendamento.findOne({ where: { id: agendamentoId, clienteId: req.usuario.id } });
-  if (!agendamento) return res.status(404).json({ mensagem: 'Agendamento nao encontrado.' });
-  if (!agendamento.concluidoEm) return res.status(409).json({ mensagem: 'A avaliacao so pode ser feita apos o prestador concluir o atendimento.' });
+  if (!agendamento) return res.status(404).json({ mensagem: 'Agendamento não encontrado.' });
+  if (!agendamento.concluidoEm) return res.status(409).json({ mensagem: 'A avaliação só pode ser feita após o prestador concluir o atendimento.' });
 
   const existente = await Avaliacao.findOne({ where: { agendamentoId } });
-  if (existente) return res.status(409).json({ mensagem: 'Este agendamento ja foi avaliado.' });
+  if (existente) return res.status(409).json({ mensagem: 'Este agendamento já foi avaliado.' });
 
   const avaliacao = await Avaliacao.create({
     agendamentoId,
@@ -46,8 +46,8 @@ export async function criarAvaliacao(req, res) {
   await criarNotificacao({
     usuarioId: agendamento.prestadorId,
     tipo: 'avaliacao',
-    titulo: 'Nova avaliacao recebida',
-    mensagem: `${req.usuario.nome} avaliou seu atendimento com ${nota} estrela(s).`,
+    titulo: 'Nova avaliação recebida',
+    mensagem: `${req.usuario.nome} avaliou seu atendimento com ${nota} ${nota === 1 ? 'estrela' : 'estrelas'}.`,
     link: '/painel/avaliacoes'
   });
   return res.status(201).json({ avaliacao });

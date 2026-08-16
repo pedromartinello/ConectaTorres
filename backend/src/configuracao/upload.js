@@ -30,7 +30,7 @@ function criarUpload(pastaDestino) {
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, arquivo, cb) => {
       if (!extensoesPorMime[arquivo.mimetype]) {
-        return cb(new Error('Formato de imagem invalido. Use JPG, PNG ou WEBP.'));
+        return cb(new Error('Formato de imagem inválido. Use JPG, PNG ou WEBP.'));
       }
       return cb(null, true);
     }

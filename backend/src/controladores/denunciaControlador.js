@@ -3,17 +3,17 @@ import { Denuncia, Usuario, Avaliacao } from '../modelos/index.js';
 export async function criarDenuncia(req, res) {
   const { prestadorId, avaliacaoId, motivo, descricao } = req.body;
   if (!prestadorId && !avaliacaoId) {
-    return res.status(422).json({ mensagem: 'Informe o prestador ou a avaliacao que deseja denunciar.' });
+    return res.status(422).json({ mensagem: 'Informe o prestador ou a avaliação que deseja denunciar.' });
   }
 
   let prestadorAlvo = prestadorId || null;
   if (prestadorId) {
     const prestador = await Usuario.findOne({ where: { id: prestadorId, tipo: 'prestador', ativo: true } });
-    if (!prestador) return res.status(404).json({ mensagem: 'Prestador nao encontrado.' });
+    if (!prestador) return res.status(404).json({ mensagem: 'Prestador não encontrado.' });
   }
   if (avaliacaoId) {
     const avaliacao = await Avaliacao.findByPk(avaliacaoId);
-    if (!avaliacao) return res.status(404).json({ mensagem: 'Avaliacao nao encontrada.' });
+    if (!avaliacao) return res.status(404).json({ mensagem: 'Avaliação não encontrada.' });
     prestadorAlvo = avaliacao.prestadorId;
   }
 

@@ -12,7 +12,7 @@ export async function listarNotificacoes(req, res) {
 
 export async function marcarComoLida(req, res) {
   const notificacao = await Notificacao.findOne({ where: { id: req.params.id, usuarioId: req.usuario.id } });
-  if (!notificacao) return res.status(404).json({ mensagem: 'Notificacao nao encontrada.' });
+  if (!notificacao) return res.status(404).json({ mensagem: 'Notificação não encontrada.' });
   if (!notificacao.lidaEm) await notificacao.update({ lidaEm: new Date() });
   return res.json({ notificacao });
 }

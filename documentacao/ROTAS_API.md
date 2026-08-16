@@ -77,3 +77,33 @@ Base: `/api`
 - `PATCH /admin/denuncias/:id`
 - `GET /admin/avaliacoes`
 - `PATCH /admin/avaliacoes/:id/visibilidade`
+
+## Novidades da v0.4
+
+### Autenticacao
+
+```text
+POST /api/autenticacao/esqueci-senha
+POST /api/autenticacao/redefinir-senha
+```
+
+`POST /esqueci-senha` sempre retorna mensagem generica. Em ambiente de desenvolvimento, quando configurado, pode retornar `linkRedefinicao` apenas para facilitar o teste academico.
+
+### Painel
+
+```text
+GET /api/painel/resumo
+```
+
+Retorna metricas adequadas ao tipo autenticado e, para cliente/prestador, os proximos agendamentos ativos.
+
+### Paginacao
+
+A busca de prestadores aceita:
+
+```text
+pagina=1
+limite=12
+```
+
+As rotas administrativas de usuarios, denuncias e avaliacoes tambem aceitam `pagina` e `limite`, alem dos filtros correspondentes.

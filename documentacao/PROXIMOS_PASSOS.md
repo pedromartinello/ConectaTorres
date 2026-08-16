@@ -1,23 +1,41 @@
 # Proximos passos
 
-O fluxo principal do ConectaTorres esta implementado. A proxima grande etapa funcional fica propositalmente reservada para a LLM.
+A versao 0.4 fecha a etapa de estabilizacao do fluxo principal do ConectaTorres.
 
-## Antes da LLM
+## v0.5 - Integracao com LLM
 
-- Executar o roteiro de testes manuais.
-- Inserir dados reais ou dados de demonstracao.
-- Revisar textos e identidade visual final.
-- Criar o repositorio Git e registrar commits por etapa.
-- Fazer uma rodada de testes de usabilidade.
+A proxima etapa planejada e adicionar a busca assistida por linguagem natural sem permitir que a IA controle dados factuais da plataforma.
 
-## Etapa final: LLM
+Fluxo esperado:
 
-Criar `backend/src/integracoes/llm/` com responsabilidades separadas:
+```text
+texto do cliente
+  -> API do backend
+  -> LLM interpreta necessidade
+  -> resposta estruturada com categorias/criterios
+  -> backend valida categorias e filtros
+  -> PostgreSQL consulta prestadores reais
+  -> frontend exibe resultados reais
+```
 
-- cliente da API de LLM;
-- prompts;
-- interpretacao da necessidade;
-- validacao do retorno estruturado;
-- conversao em filtros da busca.
+A LLM nao devera inventar:
 
-A IA deve interpretar a solicitacao, mas os prestadores, precos, disponibilidade e avaliacoes devem continuar vindo do PostgreSQL.
+- prestadores;
+- valores;
+- avaliacoes;
+- disponibilidade;
+- cidade/regiao;
+- formas de contato.
+
+## Antes da v0.5
+
+Executar o roteiro de testes da v0.4 e corrigir qualquer comportamento observado no ambiente local.
+
+## Evolucoes futuras, fora do prototipo inicial
+
+- envio real de e-mail para recuperacao de senha;
+- armazenamento externo de imagens;
+- migrations de banco para producao;
+- testes automatizados de integracao e interface;
+- deploy do frontend, backend e PostgreSQL;
+- geracao de imagens de reforma, caso seja retomada como evolucao futura.

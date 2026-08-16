@@ -14,12 +14,12 @@ export async function exigirAutenticacao(req, res, next) {
   try {
     const usuario = await resolverUsuario(req);
     if (!usuario || !usuario.ativo) {
-      return res.status(401).json({ mensagem: 'Usuario invalido, inativo ou nao autenticado.' });
+      return res.status(401).json({ mensagem: 'Usuário inválido, inativo ou não autenticado.' });
     }
     req.usuario = usuario;
     return next();
   } catch {
-    return res.status(401).json({ mensagem: 'Sessao invalida ou expirada.' });
+    return res.status(401).json({ mensagem: 'Sessão inválida ou expirada.' });
   }
 }
 

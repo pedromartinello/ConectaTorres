@@ -9,8 +9,9 @@ Agendamento.init(
     clienteId: { type: DataTypes.UUID, allowNull: false, field: 'cliente_id' },
     prestadorId: { type: DataTypes.UUID, allowNull: false, field: 'prestador_id' },
     servicoId: { type: DataTypes.UUID, allowNull: true, field: 'servico_id' },
+    horarioSolicitado: { type: DataTypes.DATE, allowNull: true, field: 'horario_solicitado' },
     inicio: { type: DataTypes.DATE, allowNull: false },
-    fim: { type: DataTypes.DATE, allowNull: false },
+    fim: { type: DataTypes.DATE, allowNull: true },
     descricao: { type: DataTypes.TEXT, allowNull: true },
     status: {
       type: DataTypes.ENUM('pendente', 'aceito', 'recusado', 'cancelado'),

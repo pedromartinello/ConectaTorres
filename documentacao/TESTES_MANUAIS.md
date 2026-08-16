@@ -60,3 +60,34 @@
 5. Ocultar e republicar avaliacao.
 6. Desativar e reativar usuario.
 7. Criar e desativar categoria.
+
+# Testes adicionais - v0.4
+
+## Recuperacao de senha
+
+1. Abra `/entrar` e clique em `Esqueci minha senha`.
+2. Informe um e-mail existente.
+3. No ambiente local, abra o link de desenvolvimento exibido.
+4. Defina uma nova senha forte.
+5. Confirme que a senha antiga deixa de funcionar.
+6. Confirme que a nova senha permite login.
+7. Tente reutilizar o mesmo link: ele deve estar invalido.
+
+## Validacao de agenda
+
+- Prestador nao deve conseguir cadastrar disponibilidade no passado.
+- Fim deve ser posterior ao inicio.
+- Cliente nao deve conseguir agendar fora da disponibilidade.
+- Prestador nao deve conseguir concluir atendimento antes do horario de inicio.
+
+## Paginacao
+
+- Crie dados suficientes ou reduza temporariamente `limite` para testar mais de uma pagina.
+- Confirme que trocar de pagina preserva os filtros.
+- Confirme que alterar filtros volta para a pagina 1 na busca de prestadores.
+
+## Perfil
+
+- Selecione imagem JPG/PNG/WEBP e confira o preview.
+- Tente arquivo acima de 5 MB e confira a validacao.
+- Remova a foto e confirme o retorno para as iniciais do usuario.

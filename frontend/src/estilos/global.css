@@ -120,7 +120,7 @@ textarea { resize: vertical; }
 label { display: grid; gap: 7px; font-weight: 650; }
 .formulario { display: grid; gap: 16px; }
 .formulario-inline { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 18px; }
-.ajuda-campo { margin: -8px 0 0; color: var(--cor-suave); font-size: .82rem; font-weight: 450; }
+.ajuda-campo { margin: 0; color: var(--cor-suave); font-size: .82rem; font-weight: 450; line-height: 1.45; }
 .pagina-formulario { min-height: calc(100vh - 72px); display: grid; place-items: center; padding: 50px 0; }
 .pagina-formulario .formulario-cartao { max-width: 540px; width: 100%; }
 .pagina-formulario .formulario-cartao h1 { margin: 8px 0 4px; }
@@ -131,6 +131,9 @@ label { display: grid; gap: 7px; font-weight: 650; }
 .arquivo-botao { position: relative; overflow: hidden; cursor: pointer; }
 .arquivo-botao input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .upload-perfil { display: flex; align-items: center; gap: 22px; }
+.upload-controles { display: grid; gap: 7px; justify-items: start; }
+.upload-controles .arquivo-botao { width: fit-content; }
+.upload-controles .ajuda-campo { margin: 0; }
 
 .alerta { padding: 12px 14px; border-radius: 10px; border: 1px solid; margin-bottom: 16px; }
 .alerta.erro { color: var(--cor-erro); background: #fff3f2; border-color: #fecdca; }
@@ -245,4 +248,90 @@ tr:last-child td { border-bottom: 0; }
   .formulario-inline { grid-template-columns: 1fr; }
   .painel-menu nav { grid-template-columns: 1fr 1fr; }
   .marca { font-size: 1.05rem; }
+}
+
+/* v0.4 - acabamento, recuperacao de senha e paginacao */
+.alerta.informacao { color: #175cd3; background: #eff8ff; border-color: #b2ddff; }
+.alerta.informacao p { margin: 6px 0 8px; }
+.quebra-link { overflow-wrap: anywhere; }
+.linha-entre-campos { display: flex; justify-content: flex-end; align-items: center; margin-top: 0; min-height: 20px; }
+.preview-avatar { display: block; object-fit: cover; border-radius: 50%; }
+
+.paginacao { margin-top: 28px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.paginacao-numeros { display: flex; align-items: center; gap: 6px; }
+.paginacao-numeros button { min-width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--cor-borda); background: white; color: var(--cor-texto); font-weight: 750; }
+.paginacao-numeros button:hover { border-color: #b9d6cf; color: var(--cor-primaria); }
+.paginacao-numeros button.ativo { background: var(--cor-primaria); border-color: var(--cor-primaria); color: white; }
+.paginacao-numeros span { color: var(--cor-suave); padding: 0 2px; }
+
+.filtros-admin { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 18px; }
+.filtros-admin input { flex: 1 1 260px; }
+.filtros-admin select { width: auto; min-width: 150px; }
+
+@media (max-width: 560px) {
+  .paginacao { align-items: stretch; }
+  .paginacao > .botao-secundario { flex: 1; }
+  .paginacao-numeros { order: -1; width: 100%; justify-content: center; }
+  .filtros-admin { display: grid; grid-template-columns: 1fr; }
+  .filtros-admin select { width: 100%; }
+}
+
+/* Mensagens de validacao proximas da acao que as originou */
+.alerta-formulario { margin: 0; }
+
+.alvo-navegacao { scroll-margin-top: 96px; }
+.alvo-navegacao:focus { outline: none; }
+
+/* v0.4 - agenda semanal profissional */
+.agenda-semanal-cartao { overflow: hidden; }
+.tabela-agenda-semanal { margin-top: 18px; border: 1px solid var(--cor-borda); border-radius: 14px; overflow: hidden; background: var(--cor-superficie); }
+.agenda-cabecalho, .agenda-linha { display: grid; grid-template-columns: 72px minmax(150px, 1fr) 130px 130px minmax(150px, .8fr); gap: 14px; align-items: center; padding: 12px 14px; }
+.agenda-cabecalho { background: var(--cor-fundo); border-bottom: 1px solid var(--cor-borda); color: var(--cor-suave); font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.agenda-linha { border-bottom: 1px solid var(--cor-borda); transition: background .16s ease; }
+.agenda-linha:last-child { border-bottom: 0; }
+.agenda-linha.fechado { background: #fafbfb; color: var(--cor-suave); }
+.agenda-linha input[type="time"] { padding: 9px 10px; }
+.agenda-linha input[type="time"]:disabled { background: var(--cor-fundo); }
+.checkbox-agenda { display: inline-flex; align-items: center; gap: 0; width: fit-content; cursor: pointer; }
+.checkbox-agenda input { position: absolute; opacity: 0; pointer-events: none; }
+.checkbox-agenda span { width: 42px; height: 24px; border-radius: 999px; background: #cfd8d4; position: relative; transition: .18s ease; }
+.checkbox-agenda span::after { content: ''; position: absolute; width: 18px; height: 18px; top: 3px; left: 3px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(0,0,0,.16); transition: .18s ease; }
+.checkbox-agenda input:checked + span { background: var(--cor-primaria); }
+.checkbox-agenda input:checked + span::after { transform: translateX(18px); }
+.agenda-aberto { color: var(--cor-sucesso); font-weight: 750; }
+.agenda-fechado { color: var(--cor-suave); font-weight: 700; }
+.agenda-acoes { margin-top: 18px; justify-content: flex-end; }
+.campo-checkbox-linha { display: flex; align-items: center; gap: 10px; align-self: end; min-height: 46px; padding: 11px 13px; border: 1px solid var(--cor-borda); border-radius: 10px; background: white; }
+.campo-checkbox-linha input { width: 18px; height: 18px; margin: 0; accent-color: var(--cor-primaria); }
+.lista-bloqueios { display: grid; gap: 10px; margin-top: 22px; }
+.bloqueio-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 14px; border: 1px solid var(--cor-borda); border-radius: 12px; background: var(--cor-fundo); }
+.vazio-compacto { padding: 16px; }
+.grade-horarios-publicos { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.horario-publico { min-height: 78px; padding: 12px 8px; border: 1px solid var(--cor-borda); border-radius: 12px; display: grid; align-content: center; justify-items: center; gap: 5px; text-align: center; background: white; }
+.horario-publico strong { color: var(--cor-primaria-escura); }
+.horario-publico span { font-size: .78rem; color: var(--cor-suave); }
+.horario-publico.fechado { background: var(--cor-fundo); opacity: .78; }
+.consulta-agenda { display: grid; gap: 10px; padding: 13px 14px; border: 1px solid var(--cor-borda); border-radius: 12px; background: var(--cor-fundo); }
+.agenda-disponivel { color: var(--cor-sucesso); }
+.agenda-indisponivel { color: var(--cor-erro); }
+.faixas-agenda { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: .82rem; color: var(--cor-suave); }
+.tag-ocupado { background: #f2f4f7; color: #475467; }
+.verificacao-horario { min-height: 42px; display: flex; align-items: center; padding: 10px 12px; border: 1px solid var(--cor-borda); border-radius: 10px; background: var(--cor-fundo); color: var(--cor-suave); font-weight: 700; }
+.verificacao-horario.ok { background: #ecfdf3; border-color: #abefc6; color: var(--cor-sucesso); }
+.verificacao-horario.erro { background: #fef3f2; border-color: #fecdca; color: var(--cor-erro); }
+
+@media (max-width: 900px) {
+  .agenda-cabecalho { display: none; }
+  .agenda-linha { grid-template-columns: 58px minmax(130px, 1fr) 1fr 1fr; }
+  .agenda-linha > :last-child { grid-column: 2 / -1; }
+  .grade-horarios-publicos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .agenda-linha { grid-template-columns: 52px 1fr 1fr; gap: 10px; }
+  .agenda-linha > strong { grid-column: 2 / -1; }
+  .agenda-linha input[type="time"]:nth-of-type(1) { grid-column: 2; }
+  .agenda-linha > :last-child { grid-column: 2 / -1; }
+  .grade-horarios-publicos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bloqueio-item { align-items: flex-start; }
 }

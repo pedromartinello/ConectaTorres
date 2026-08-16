@@ -32,14 +32,14 @@ export async function listarFavoritos(req, res) {
 
 export async function adicionarFavorito(req, res) {
   const prestador = await Usuario.findOne({ where: { id: req.params.prestadorId, tipo: 'prestador', ativo: true } });
-  if (!prestador) return res.status(404).json({ mensagem: 'Prestador nao encontrado.' });
+  if (!prestador) return res.status(404).json({ mensagem: 'Prestador não encontrado.' });
   const [favorito, criado] = await Favorito.findOrCreate({ where: { clienteId: req.usuario.id, prestadorId: prestador.id } });
   return res.status(criado ? 201 : 200).json({ favorito });
 }
 
 export async function removerFavorito(req, res) {
   const favorito = await Favorito.findOne({ where: { clienteId: req.usuario.id, prestadorId: req.params.prestadorId } });
-  if (!favorito) return res.status(404).json({ mensagem: 'Favorito nao encontrado.' });
+  if (!favorito) return res.status(404).json({ mensagem: 'Favorito não encontrado.' });
   await favorito.destroy();
   return res.status(204).send();
 }

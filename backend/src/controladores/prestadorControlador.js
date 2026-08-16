@@ -7,9 +7,13 @@ import {
   Avaliacao,
   Disponibilidade,
   PortfolioImagem,
-  Favorito
+  Favorito,
+  HorarioSemanal,
+  BloqueioAgenda
 } from '../modelos/index.js';
 import { removerArquivoPorUrl } from '../configuracao/upload.js';
+import { obterPaginacao, montarPaginacao } from '../utilitarios/paginacao.js';
+import { diaSemanaDaData } from '../servicos/disponibilidadeServico.js';
 
 function calcularMedia(avaliacoes = []) {
   if (!avaliacoes.length) return 0;
@@ -34,6 +38,7 @@ export async function listarPrestadores(req, res) {
     disponivel_em: disponivelEm,
     ordenar = 'relevancia'
   } = req.query;
+  const { pagina, limite } = obterPaginacao(req.query, 12, 24);
 
   const usuarios = await Usuario.findAll({
     where: { tipo: 'prestador', ativo: true },
@@ -64,6 +69,17 @@ export async function listarPrestadores(req, res) {
         as: 'disponibilidades',
         required: false,
         where: { fim: { [Op.gte]: new Date() } }
+      },
+      {
+        model: HorarioSemanal,
+        as: 'horariosSemanais',
+        required: false
+      },
+      {
+        model: BloqueioAgenda,
+        as: 'bloqueiosAgenda',
+        required: false,
+        where: disponivelEm ? { data: disponivelEm } : undefined
       }
     ],
     order: [['nome', 'ASC']]
@@ -111,12 +127,18 @@ export async function listarPrestadores(req, res) {
   if (precoMax) prestadores = prestadores.filter((item) => item.menorPreco !== null && item.menorPreco <= Number(precoMax));
 
   if (disponivelEm) {
+    const diaSemana = diaSemanaDaData(disponivelEm);
     const inicioDia = new Date(`${disponivelEm}T00:00:00`);
     const fimDia = new Date(`${disponivelEm}T23:59:59`);
-    if (!Number.isNaN(inicioDia.getTime())) {
-      prestadores = prestadores.filter((item) => item.disponibilidades.some((d) =>
-        new Date(d.inicio) <= fimDia && new Date(d.fim) >= inicioDia
-      ));
+    if (diaSemana !== null && !Number.isNaN(inicioDia.getTime())) {
+      prestadores = prestadores.filter((item) => {
+        if (item.horariosSemanais?.length) {
+          const horario = item.horariosSemanais.find((h) => Number(h.diaSemana) === diaSemana && h.ativo);
+          const bloqueado = item.bloqueiosAgenda?.some((b) => b.data === disponivelEm && b.diaInteiro);
+          return Boolean(horario && !bloqueado);
+        }
+        return item.disponibilidades.some((d) => new Date(d.inicio) <= fimDia && new Date(d.fim) >= inicioDia);
+      });
     }
   }
 
@@ -127,7 +149,14 @@ export async function listarPrestadores(req, res) {
   };
   if (ordenadores[ordenar]) prestadores.sort(ordenadores[ordenar]);
 
-  return res.json({ prestadores });
+  prestadores.forEach((item) => {
+    delete item.bloqueiosAgenda;
+  });
+
+  const total = prestadores.length;
+  const inicio = (pagina - 1) * limite;
+  const itens = prestadores.slice(inicio, inicio + limite);
+  return res.json({ prestadores: itens, paginacao: montarPaginacao(total, pagina, limite) });
 }
 
 export async function obterPrestador(req, res) {
@@ -156,15 +185,23 @@ export async function obterPrestador(req, res) {
         required: false,
         where: { fim: { [Op.gte]: new Date() } }
       },
+      { model: HorarioSemanal, as: 'horariosSemanais', required: false },
+      {
+        model: BloqueioAgenda,
+        as: 'bloqueiosAgenda',
+        required: false,
+        where: { data: { [Op.gte]: new Date().toISOString().slice(0, 10) } }
+      },
       { model: PortfolioImagem, as: 'portfolio', required: false }
     ],
     order: [
+      [{ model: HorarioSemanal, as: 'horariosSemanais' }, 'diaSemana', 'ASC'],
       [{ model: Disponibilidade, as: 'disponibilidades' }, 'inicio', 'ASC'],
       [{ model: PortfolioImagem, as: 'portfolio' }, 'ordem', 'ASC']
     ]
   });
 
-  if (!prestador) return res.status(404).json({ mensagem: 'Prestador nao encontrado.' });
+  if (!prestador) return res.status(404).json({ mensagem: 'Prestador não encontrado.' });
 
   const json = prestador.toJSON();
   json.mediaAvaliacoes = calcularMedia(json.avaliacoesRecebidas);
@@ -204,7 +241,7 @@ export async function adicionarPortfolio(req, res) {
   const total = await PortfolioImagem.count({ where: { prestadorId: req.usuario.id } });
   if (total >= 12) {
     removerArquivoPorUrl(`/uploads/portfolio/${req.file.filename}`);
-    return res.status(409).json({ mensagem: 'O portfolio permite no maximo 12 imagens.' });
+    return res.status(409).json({ mensagem: 'O portfólio permite no máximo 12 imagens.' });
   }
   const item = await PortfolioImagem.create({
     prestadorId: req.usuario.id,
@@ -217,7 +254,7 @@ export async function adicionarPortfolio(req, res) {
 
 export async function atualizarPortfolio(req, res) {
   const item = await PortfolioImagem.findOne({ where: { id: req.params.id, prestadorId: req.usuario.id } });
-  if (!item) return res.status(404).json({ mensagem: 'Imagem nao encontrada.' });
+  if (!item) return res.status(404).json({ mensagem: 'Imagem não encontrada.' });
   await item.update({
     legenda: req.body.legenda?.trim() || null,
     ordem: Number.isInteger(req.body.ordem) ? req.body.ordem : item.ordem
@@ -227,7 +264,7 @@ export async function atualizarPortfolio(req, res) {
 
 export async function removerPortfolio(req, res) {
   const item = await PortfolioImagem.findOne({ where: { id: req.params.id, prestadorId: req.usuario.id } });
-  if (!item) return res.status(404).json({ mensagem: 'Imagem nao encontrada.' });
+  if (!item) return res.status(404).json({ mensagem: 'Imagem não encontrada.' });
   removerArquivoPorUrl(item.imagemUrl);
   await item.destroy();
   return res.status(204).send();

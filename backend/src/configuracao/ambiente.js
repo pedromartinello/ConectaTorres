@@ -19,6 +19,7 @@ export const ambiente = {
   nodeEnv: process.env.NODE_ENV || 'development',
   porta: Number(process.env.PORTA || 3001),
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  fusoHorario: process.env.FUSO_HORARIO || 'America/Sao_Paulo',
   banco: {
     host: process.env.BANCO_HOST,
     porta: Number(process.env.BANCO_PORTA),
@@ -29,6 +30,10 @@ export const ambiente = {
   jwt: {
     segredo: process.env.JWT_SEGREDO,
     expiracao: process.env.JWT_EXPIRACAO || '8h'
+  },
+  recuperacaoSenha: {
+    minutosExpiracao: Number(process.env.RECUPERACAO_SENHA_MINUTOS || 30),
+    exibirLinkDesenvolvimento: process.env.RECUPERACAO_EXIBIR_LINK !== 'false'
   },
   admin: {
     nome: process.env.ADMIN_NOME || '',

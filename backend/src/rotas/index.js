@@ -11,9 +11,10 @@ import favoritoRotas from './favoritoRotas.js';
 import notificacaoRotas from './notificacaoRotas.js';
 import denunciaRotas from './denunciaRotas.js';
 import adminRotas from './adminRotas.js';
+import painelRotas from './painelRotas.js';
 
 const router = Router();
-router.get('/saude', (req, res) => res.json({ status: 'ok', aplicacao: 'ConectaTorres API', versao: '0.3.0' }));
+router.get('/saude', (req, res) => res.json({ status: 'ok', aplicacao: 'ConectaTorres API', versao: '0.4.0' }));
 router.use('/autenticacao', autenticacaoRotas);
 router.use('/usuarios', usuarioRotas);
 router.use('/categorias', categoriaRotas);
@@ -26,4 +27,5 @@ router.use('/favoritos', favoritoRotas);
 router.use('/notificacoes', notificacaoRotas);
 router.use('/denuncias', denunciaRotas);
 router.use('/admin', adminRotas);
+router.use('/painel', painelRotas);
 export default router;

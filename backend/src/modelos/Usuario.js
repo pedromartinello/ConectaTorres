@@ -10,6 +10,8 @@ export class Usuario extends Model {
   toJSON() {
     const valores = { ...this.get() };
     delete valores.senhaHash;
+    delete valores.tokenRedefinicaoSenha;
+    delete valores.tokenRedefinicaoExpiraEm;
     return valores;
   }
 }
@@ -22,6 +24,8 @@ Usuario.init(
     telefone: { type: DataTypes.STRING(30), allowNull: true },
     fotoUrl: { type: DataTypes.STRING(500), allowNull: true, field: 'foto_url' },
     senhaHash: { type: DataTypes.STRING, allowNull: false, field: 'senha_hash' },
+    tokenRedefinicaoSenha: { type: DataTypes.STRING(64), allowNull: true, field: 'token_redefinicao_senha' },
+    tokenRedefinicaoExpiraEm: { type: DataTypes.DATE, allowNull: true, field: 'token_redefinicao_expira_em' },
     tipo: {
       type: DataTypes.ENUM('cliente', 'prestador', 'admin'),
       allowNull: false,

@@ -18,7 +18,7 @@ router.patch('/minha-senha', [
   body('senhaAtual').notEmpty(),
   body('novaSenha').isLength({ min: 8, max: 128 })
     .matches(/[a-z]/).matches(/[A-Z]/).matches(/[0-9]/)
-    .withMessage('A nova senha precisa ter 8 caracteres, maiuscula, minuscula e numero.')
+    .withMessage('A nova senha precisa ter 8 caracteres, maiúscula, minúscula e número.')
 ], validarRequisicao, asyncHandler(alterarSenha));
 router.post('/minha-foto', executarUpload(uploadFotoPerfil), asyncHandler(enviarFotoPerfil));
 router.delete('/minha-foto', asyncHandler(removerFotoPerfil));

@@ -7,7 +7,7 @@ export async function atualizarMeuPerfil(req, res) {
 
   if (email && email !== usuario.email) {
     const existente = await Usuario.findOne({ where: { email } });
-    if (existente) return res.status(409).json({ mensagem: 'Este e-mail ja esta em uso.' });
+    if (existente) return res.status(409).json({ mensagem: 'Este e-mail já está em uso.' });
   }
 
   await usuario.update({
@@ -26,7 +26,7 @@ export async function atualizarMeuPerfil(req, res) {
 export async function alterarSenha(req, res) {
   const usuario = await Usuario.findByPk(req.usuario.id);
   const correta = await usuario.verificarSenha(req.body.senhaAtual);
-  if (!correta) return res.status(401).json({ mensagem: 'A senha atual esta incorreta.' });
+  if (!correta) return res.status(401).json({ mensagem: 'A senha atual está incorreta.' });
   if (req.body.senhaAtual === req.body.novaSenha) {
     return res.status(422).json({ mensagem: 'A nova senha deve ser diferente da senha atual.' });
   }
