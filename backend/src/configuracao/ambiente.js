@@ -64,7 +64,7 @@ export const ambiente = {
     habilitada: booleano(process.env.IA_HABILITADA, true),
     configurada: valorReal(process.env.OPENAI_API_KEY),
     apiKey: process.env.OPENAI_API_KEY || '',
-    modelo: process.env.OPENAI_MODELO || 'gpt-5.6-luna'
+    modelo: process.env.OPENAI_MODELO || 'gpt-5.6-terra'
   },
   admin: {
     nome: process.env.ADMIN_NOME || '',

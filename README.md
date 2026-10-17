@@ -2,7 +2,7 @@
 
 Projeto de PDS para conexão entre clientes e prestadores de serviços locais em Torres/RS e região.
 
-Versão atual: **0.5.0 - busca inteligente com LLM + recuperação de senha por e-mail**.
+Versão atual: **0.6.0 - orçamentos, fluxo comercial, histórico do atendimento e IA consultiva**.
 
 ## Tecnologias
 
@@ -23,30 +23,54 @@ Versão atual: **0.5.0 - busca inteligente com LLM + recuperação de senha por 
 - Login e logout.
 - Senhas com hash bcrypt.
 - JWT em cookie HTTP-only.
-- Rate limit nas rotas de autenticação e IA.
-- Helmet, CORS e validação de entrada.
+- Rate limit, Helmet, CORS e validação de entrada.
 - Alteração de dados pessoais e senha.
 - Foto de perfil.
-- Recuperação de senha com token temporário e expiração.
-- Envio real do link de redefinição por SMTP quando configurado.
-- Fallback de desenvolvimento por link local quando o SMTP não estiver configurado.
+- Recuperação de senha com token temporário e envio real por e-mail via SMTP.
 
 ### Cliente
 - Busca tradicional com filtros e paginação.
-- **Busca inteligente em linguagem natural com IA.**
-- A IA interpreta a necessidade e seleciona apenas categorias cadastradas.
-- Os resultados continuam vindo exclusivamente do PostgreSQL.
+- Assistente inteligente em linguagem natural.
+- Orientação simples para usuários leigos, indicação de categorias e próximos passos.
+- Faixa de valores exibida somente quando há preços de referência reais cadastrados no PostgreSQL.
 - Favoritos, agenda, avaliações, denúncias e notificações.
+- Recebimento, aceitação e recusa de orçamentos.
+- Histórico do atendimento e da negociação.
 
 ### Prestador
 - Perfil profissional e portfólio.
 - Serviços e agenda semanal com bloqueios por data.
 - Gestão de solicitações e atendimentos.
-- **Sugestão de descrição profissional com IA**, sempre sujeita à revisão do prestador antes de salvar.
+- Definição de período previsto antes de confirmar o atendimento.
+- Criação, revisão, reenvio e cancelamento de orçamentos.
+- Valor, descrição, materiais inclusos, validade e observações no orçamento.
+- Sugestão de descrição profissional com IA, sempre sujeita à revisão antes de salvar.
 
 ### Administrador
 - Gestão de usuários, categorias, denúncias e avaliações.
 - Conta administrativa sem cadastro público.
+
+## Fluxo comercial da v0.6
+
+```text
+Cliente solicita atendimento
+        ↓
+Prestador define o período previsto
+        ↓
+Prestador pode enviar orçamento
+        ↓
+Cliente recebe notificação
+        ↓
+Aceita ou recusa a proposta
+        ↓
+Se aceitar, a solicitação pendente é confirmada
+        ↓
+Prestador executa e conclui o atendimento
+        ↓
+Cliente pode avaliar
+```
+
+O orçamento é opcional: atendimentos simples podem continuar usando apenas o fluxo de agenda.
 
 ## Estrutura
 
@@ -82,13 +106,13 @@ ConectaTorres/
 
 ## Execução local
 
-### 1. Banco
+### Terminal 1 - PostgreSQL
 
 ```powershell
 docker compose up -d banco
 ```
 
-### 2. Backend
+### Terminal 2 - Backend
 
 ```powershell
 cd backend
@@ -98,9 +122,9 @@ npm run dev
 
 API: `http://localhost:3001`
 
-Saúde da API: `http://localhost:3001/api/saude`
+Saúde: `http://localhost:3001/api/saude`
 
-### 3. Frontend
+### Terminal 3 - Frontend
 
 ```powershell
 cd frontend
@@ -110,45 +134,33 @@ npm run dev
 
 Site: `http://localhost:5173`
 
-## Configurações da v0.5
+## Variáveis de ambiente
 
-A v0.5 adiciona novas variáveis ao `backend/.env`. Consulte:
+Copie `backend/.env.exemplo` para `backend/.env` e mantenha as credenciais reais somente no `.env`.
 
-```text
-documentacao/CONFIGURAR_IA_EMAIL.md
+A configuração de IA recomendada para o projeto é:
+
+```env
+IA_HABILITADA=true
+OPENAI_API_KEY=sua_chave_real
+OPENAI_MODELO=gpt-5.6-terra
 ```
 
-Nunca coloque chaves de API, senha de SMTP, JWT ou outras credenciais reais no `.env.exemplo` ou no GitHub.
+Nunca envie `OPENAI_API_KEY`, `SMTP_SENHA`, `JWT_SEGREDO`, senha real do administrador ou senha real do banco para o GitHub.
 
 ## Como a IA funciona
 
 ```text
 texto do cliente
-  -> backend envia somente a necessidade + catálogo de categorias para a LLM
-  -> LLM retorna categorias estruturadas
-  -> backend valida os slugs recebidos
+  -> backend envia a necessidade + catálogo de categorias
+  -> LLM devolve orientação + categorias estruturadas
+  -> backend valida as categorias
+  -> backend calcula eventual faixa de valores usando somente dados reais cadastrados
   -> busca normal consulta PostgreSQL
-  -> frontend mostra prestadores reais
+  -> frontend exibe prestadores reais
 ```
 
-A IA **não fornece nem inventa** profissionais, preços, avaliações, agenda ou contato.
-
-No perfil profissional, a IA também pode sugerir uma descrição a partir das informações já fornecidas pelo próprio prestador. A sugestão é inserida no campo de texto e só é publicada se o usuário clicar em **Salvar perfil**.
-
-## Recuperação de senha
-
-Quando SMTP está configurado:
-
-```text
-usuário informa e-mail
-  -> backend gera token aleatório
-  -> banco armazena somente o hash do token
-  -> link temporário é enviado por e-mail
-  -> usuário redefine a senha
-  -> token é invalidado
-```
-
-Em desenvolvimento, `RECUPERACAO_EXIBIR_LINK=true` permite testar o fluxo mesmo sem SMTP.
+A IA não inventa prestadores, avaliações, disponibilidade ou preço de mercado.
 
 ## Verificação
 

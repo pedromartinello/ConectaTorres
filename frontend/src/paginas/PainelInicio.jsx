@@ -31,8 +31,11 @@ export function PainelInicio() {
         <div className="grade-metricas">
           <div className="metrica"><span>Agendamentos ativos</span><strong>{resumo?.agendamentosAtivos || 0}</strong><Link to="/painel/agenda#agendamentos">Ver agenda</Link></div>
           {usuario.tipo === 'cliente' && <div className="metrica"><span>Favoritos</span><strong>{resumo?.favoritos || 0}</strong><Link to="/painel/favoritos">Ver favoritos</Link></div>}
+          {usuario.tipo === 'cliente' && <div className="metrica"><span>Orçamentos para analisar</span><strong>{resumo?.orcamentosPendentes || 0}</strong><Link to="/painel/orcamentos">Ver orçamentos</Link></div>}
           {usuario.tipo === 'cliente' && <div className="metrica"><span>Avaliações pendentes</span><strong>{resumo?.avaliacoesPendentes || 0}</strong><Link to="/painel/avaliacoes">Avaliar</Link></div>}
           {usuario.tipo === 'prestador' && <div className="metrica"><span>Solicitações pendentes</span><strong>{resumo?.solicitacoesPendentes || 0}</strong><Link to="/painel/agenda#agendamentos">Responder</Link></div>}
+          {usuario.tipo === 'prestador' && <div className="metrica"><span>Orçamentos aguardando</span><strong>{resumo?.orcamentosAguardando || 0}</strong><Link to="/painel/orcamentos">Abrir orçamentos</Link></div>}
+          {usuario.tipo === 'prestador' && <div className="metrica"><span>Orçamentos aceitos</span><strong>{resumo?.orcamentosAceitos || 0}</strong><Link to="/painel/orcamentos">Ver aprovados</Link></div>}
           {usuario.tipo === 'prestador' && <div className="metrica"><span>Serviços ativos</span><strong>{resumo?.servicosAtivos || 0}</strong><Link to="/painel/servicos">Gerenciar</Link></div>}
           {usuario.tipo === 'prestador' && <div className="metrica"><span>Avaliações recebidas</span><strong>{resumo?.totalAvaliacoes || 0}</strong><Link to="/painel/avaliacoes">Visualizar</Link></div>}
           <div className="metrica"><span>Notificações não lidas</span><strong>{resumo?.notificacoesNaoLidas || 0}</strong><Link to="/painel/notificacoes">Abrir notificações</Link></div>

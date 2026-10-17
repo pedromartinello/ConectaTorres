@@ -10,8 +10,8 @@ export function LayoutPainel() {
     ['/painel/perfil', 'Meu perfil'],
     ['/painel/agenda', 'Agenda']
   ];
-  if (usuario.tipo === 'cliente') links.push(['/painel/favoritos', 'Favoritos'], ['/painel/avaliacoes', 'Avaliações']);
-  if (usuario.tipo === 'prestador') links.push(['/painel/profissional', 'Perfil profissional'], ['/painel/servicos', 'Meus serviços'], ['/painel/avaliacoes', 'Avaliações']);
+  if (usuario.tipo === 'cliente') links.push(['/painel/favoritos', 'Favoritos'], ['/painel/orcamentos', 'Orçamentos'], ['/painel/avaliacoes', 'Avaliações']);
+  if (usuario.tipo === 'prestador') links.push(['/painel/profissional', 'Perfil profissional'], ['/painel/servicos', 'Meus serviços'], ['/painel/orcamentos', 'Orçamentos'], ['/painel/avaliacoes', 'Avaliações']);
   links.push(['/painel/notificacoes', 'Notificações']);
   if (usuario.tipo === 'admin') links.push(['/painel/admin', 'Administração']);
 

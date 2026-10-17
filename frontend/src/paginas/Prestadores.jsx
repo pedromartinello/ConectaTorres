@@ -87,14 +87,17 @@ export function Prestadores() {
       </div>
 
       {usandoIA && (
-        <section className="resultado-ia">
+        <section className="resultado-ia resultado-ia-completo">
           <div>
-            <span className="rotulo">✦ Busca assistida por IA</span>
-            <h2>{buscaIA?.mensagem || 'Categorias identificadas a partir da sua necessidade.'}</h2>
-            {buscaIA?.descricao && <p className="texto-suave">“{buscaIA.descricao}”</p>}
+            <span className="rotulo">✦ Orientação do assistente</span>
+            <h2>Por onde começar</h2>
+            {buscaIA?.orientacao && <p className="orientacao-ia">{buscaIA.orientacao}</p>}
+            {buscaIA?.descricao && <p className="texto-suave">Sua descrição: “{buscaIA.descricao}”</p>}
           </div>
           <div className="chips-ia">{nomesIA.map((nome) => <span key={nome}>{nome}</span>)}</div>
-          <p className="ajuda-campo">A IA selecionou categorias. Os profissionais, preços, avaliações e disponibilidade abaixo vêm apenas dos dados cadastrados no ConectaTorres.</p>
+          {buscaIA?.passos?.length > 0 && <div className="passos-ia"><strong>Próximos passos sugeridos</strong><ol>{buscaIA.passos.map((passo, i) => <li key={`${i}-${passo}`}>{passo}</li>)}</ol></div>}
+          {buscaIA?.faixaValores && <div className="faixa-valores-ia"><span>Valores de referência cadastrados</span><strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(buscaIA.faixaValores.minimo)} a {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(buscaIA.faixaValores.maximo)}</strong><small>Faixa baseada em {buscaIA.faixaValores.amostra} {buscaIA.faixaValores.amostra === 1 ? 'serviço cadastrado' : 'serviços cadastrados'}. Não é orçamento e pode variar conforme o caso.</small></div>}
+          <p className="ajuda-campo">A IA apenas orienta a busca. Os profissionais, valores, avaliações e disponibilidade abaixo vêm dos dados cadastrados no ConectaTorres.</p>
         </section>
       )}
 

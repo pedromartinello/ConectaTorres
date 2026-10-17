@@ -1,13 +1,20 @@
-import { Agendamento, Servico, Usuario, Avaliacao } from '../modelos/index.js';
+import { Agendamento, Servico, Usuario, Avaliacao, Orcamento, HistoricoAtendimento } from '../modelos/index.js';
 import { criarNotificacao } from '../utilitarios/notificacoes.js';
+import { registrarHistorico } from '../utilitarios/historico.js';
 import { validarHorarioPrestador, validarHorarioSolicitado } from '../servicos/disponibilidadeServico.js';
 
 const inclusoes = [
   { model: Usuario, as: 'cliente', attributes: ['id', 'nome', 'email', 'telefone', 'fotoUrl'] },
   { model: Usuario, as: 'prestador', attributes: ['id', 'nome', 'email', 'telefone', 'fotoUrl'] },
   { model: Servico, as: 'servico' },
-  { model: Avaliacao, as: 'avaliacao', required: false }
+  { model: Avaliacao, as: 'avaliacao', required: false },
+  { model: Orcamento, as: 'orcamento', required: false }
 ];
+
+function pertenceAoUsuario(agendamento, usuario) {
+  return (usuario.tipo === 'cliente' && agendamento.clienteId === usuario.id)
+    || (usuario.tipo === 'prestador' && agendamento.prestadorId === usuario.id);
+}
 
 export async function listarMeusAgendamentos(req, res) {
   const where = req.usuario.tipo === 'prestador' ? { prestadorId: req.usuario.id } : { clienteId: req.usuario.id };
@@ -45,6 +52,14 @@ export async function criarAgendamento(req, res) {
     descricao: descricao?.trim() || null
   });
 
+  await registrarHistorico({
+    agendamentoId: agendamento.id,
+    usuarioId: req.usuario.id,
+    tipo: 'solicitacao_criada',
+    titulo: 'Solicitação enviada',
+    descricao: `O cliente informou ${inicio.toLocaleString('pt-BR')} como horário de referência.`
+  });
+
   await criarNotificacao({
     usuarioId: prestadorId,
     tipo: 'agendamento',
@@ -80,6 +95,25 @@ export async function alterarStatus(req, res) {
   }
 
   await agendamento.update({ status });
+  if (['recusado', 'cancelado'].includes(status)) {
+    await Orcamento.update(
+      { status: 'cancelado', respondidoEm: new Date() },
+      { where: { agendamentoId: agendamento.id, status: 'enviado' } }
+    );
+  }
+  const rotulos = { aceito: 'Atendimento aceito', recusado: 'Solicitação recusada', cancelado: 'Agendamento cancelado' };
+  await registrarHistorico({
+    agendamentoId: agendamento.id,
+    usuarioId: req.usuario.id,
+    tipo: `agendamento_${status}`,
+    titulo: rotulos[status] || 'Agendamento atualizado',
+    descricao: status === 'aceito'
+      ? 'O período foi confirmado pelo prestador.'
+      : status === 'recusado'
+        ? 'O prestador recusou a solicitação.'
+        : 'O atendimento foi cancelado.'
+  });
+
   const destinatario = ehPrestadorDono ? agendamento.clienteId : agendamento.prestadorId;
   await criarNotificacao({
     usuarioId: destinatario,
@@ -109,6 +143,13 @@ export async function ajustarHorario(req, res) {
 
   const eraSomenteReferencia = !agendamento.fim;
   await agendamento.update({ inicio, fim });
+  await registrarHistorico({
+    agendamentoId: agendamento.id,
+    usuarioId: req.usuario.id,
+    tipo: eraSomenteReferencia ? 'periodo_definido' : 'horario_ajustado',
+    titulo: eraSomenteReferencia ? 'Período definido pelo prestador' : 'Horário ajustado',
+    descricao: `${inicio.toLocaleString('pt-BR')} até ${fim.toLocaleString('pt-BR')}.`
+  });
   await criarNotificacao({
     usuarioId: agendamento.clienteId,
     tipo: 'agendamento',
@@ -128,7 +169,15 @@ export async function concluirAgendamento(req, res) {
   if (agendamento.concluidoEm) return res.status(409).json({ mensagem: 'Este atendimento já foi concluído.' });
   if (new Date(agendamento.inicio) > new Date()) return res.status(409).json({ mensagem: 'O atendimento ainda não iniciou e não pode ser concluído.' });
 
-  await agendamento.update({ concluidoEm: new Date() });
+  const concluidoEm = new Date();
+  await agendamento.update({ concluidoEm });
+  await registrarHistorico({
+    agendamentoId: agendamento.id,
+    usuarioId: req.usuario.id,
+    tipo: 'atendimento_concluido',
+    titulo: 'Atendimento concluído',
+    descricao: `O prestador concluiu o atendimento em ${concluidoEm.toLocaleString('pt-BR')}.`
+  });
   await criarNotificacao({
     usuarioId: agendamento.clienteId,
     tipo: 'avaliacao',
@@ -137,4 +186,30 @@ export async function concluirAgendamento(req, res) {
     link: '/painel/avaliacoes'
   });
   return res.json({ agendamento });
+}
+
+export async function obterHistoricoAgendamento(req, res) {
+  const agendamento = await Agendamento.findByPk(req.params.id);
+  if (!agendamento) return res.status(404).json({ mensagem: 'Agendamento não encontrado.' });
+  if (!pertenceAoUsuario(agendamento, req.usuario)) return res.status(403).json({ mensagem: 'Você não pode visualizar o histórico deste atendimento.' });
+
+  const historico = await HistoricoAtendimento.findAll({
+    where: { agendamentoId: agendamento.id },
+    include: [{ model: Usuario, as: 'usuario', attributes: ['id', 'nome', 'tipo'], required: false }],
+    order: [['createdAt', 'ASC']]
+  });
+  const itens = historico.map((item) => item.toJSON());
+  if (!itens.some((item) => item.tipo === 'solicitacao_criada')) {
+    itens.unshift({
+      id: `inicio-${agendamento.id}`,
+      agendamentoId: agendamento.id,
+      usuarioId: agendamento.clienteId,
+      tipo: 'solicitacao_criada',
+      titulo: 'Solicitação enviada',
+      descricao: 'Início do atendimento no ConectaTorres.',
+      createdAt: agendamento.createdAt,
+      usuario: null
+    });
+  }
+  return res.json({ historico: itens });
 }

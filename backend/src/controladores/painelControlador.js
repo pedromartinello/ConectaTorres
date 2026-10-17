@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { Agendamento, Avaliacao, Favorito, Notificacao, PerfilPrestador, Servico, Usuario } from '../modelos/index.js';
+import { Agendamento, Avaliacao, Favorito, Notificacao, Orcamento, PerfilPrestador, Servico, Usuario } from '../modelos/index.js';
 
 const inclusoesAgenda = [
   { model: Usuario, as: 'cliente', attributes: ['id', 'nome', 'fotoUrl'] },
@@ -48,21 +48,24 @@ export async function obterMeuResumo(req, res) {
   ]);
 
   if (req.usuario.tipo === 'cliente') {
-    const [favoritos, concluidos, avaliacoesFeitas] = await Promise.all([
+    const [favoritos, concluidos, avaliacoesFeitas, orcamentosPendentes] = await Promise.all([
       Favorito.count({ where: { clienteId: req.usuario.id } }),
       Agendamento.count({ where: { clienteId: req.usuario.id, concluidoEm: { [Op.ne]: null } } }),
-      Avaliacao.count({ where: { clienteId: req.usuario.id } })
+      Avaliacao.count({ where: { clienteId: req.usuario.id } }),
+      Orcamento.count({ where: { clienteId: req.usuario.id, status: 'enviado' } })
     ]);
     const avaliacoesPendentes = Math.max(0, concluidos - avaliacoesFeitas);
     return res.json({
-      resumo: { agendamentosAtivos, favoritos, avaliacoesPendentes, notificacoesNaoLidas, proximos }
+      resumo: { agendamentosAtivos, favoritos, avaliacoesPendentes, orcamentosPendentes, notificacoesNaoLidas, proximos }
     });
   }
 
-  const [servicosAtivos, solicitacoesPendentes, totalAvaliacoes, perfil] = await Promise.all([
+  const [servicosAtivos, solicitacoesPendentes, totalAvaliacoes, orcamentosAguardando, orcamentosAceitos, perfil] = await Promise.all([
     Servico.count({ where: { prestadorId: req.usuario.id, ativo: true } }),
     Agendamento.count({ where: { prestadorId: req.usuario.id, status: 'pendente', concluidoEm: null } }),
     Avaliacao.count({ where: { prestadorId: req.usuario.id, visivel: true } }),
+    Orcamento.count({ where: { prestadorId: req.usuario.id, status: 'enviado' } }),
+    Orcamento.count({ where: { prestadorId: req.usuario.id, status: 'aceito' } }),
     PerfilPrestador.findOne({ where: { usuarioId: req.usuario.id } })
   ]);
 
@@ -72,6 +75,8 @@ export async function obterMeuResumo(req, res) {
       servicosAtivos,
       solicitacoesPendentes,
       totalAvaliacoes,
+      orcamentosAguardando,
+      orcamentosAceitos,
       notificacoesNaoLidas,
       proximos,
       perfilCompleto: Boolean(perfil?.titulo && perfil?.descricao && perfil?.cidade && perfil?.whatsapp)

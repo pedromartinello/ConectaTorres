@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../servicos/api.js';
 import { useAutenticacao } from '../contextos/ContextoAutenticacao.jsx';
 import { useNotificacoes } from '../contextos/ContextoNotificacoes.jsx';
-import { rotuloStatusAgendamento } from '../utilitarios/rotulos.js';
+import { rotuloStatusAgendamento, rotuloStatusOrcamento } from '../utilitarios/rotulos.js';
 import { DIAS_SEMANA, formatarDataCurta, hojeLocal, mesclarAgendaSemanal } from '../utilitarios/agenda.js';
 import { rolarParaElemento } from '../utilitarios/navegacao.js';
 
@@ -296,6 +297,7 @@ export function MinhaAgenda() {
                 <div className="tags">
                   <span className={`status status-${a.status}`}>{rotuloStatusAgendamento(a.status)}</span>
                   {a.concluidoEm && <span className="status status-concluido">Concluído</span>}
+                  {a.orcamento && <span className={`status status-orcamento-${a.orcamento.status}`}>Orçamento {rotuloStatusOrcamento(a.orcamento.status).toLowerCase()}</span>}
                 </div>
                 <h3>{a.servico?.titulo || 'Serviço não especificado'}</h3>
                 <p><strong>{textoHorarioAgendamento(a, usuario.tipo)}</strong></p>
@@ -320,6 +322,12 @@ export function MinhaAgenda() {
                 )}
                 {usuario.tipo === 'prestador' && a.status === 'aceito' && !a.concluidoEm && (
                   <button className="botao-secundario botao-pequeno" onClick={() => concluir(a.id)}>Concluir atendimento</button>
+                )}
+                {usuario.tipo === 'prestador' && ['pendente', 'aceito'].includes(a.status) && !a.concluidoEm && a.fim && (
+                  <Link className="botao-secundario botao-pequeno" to={`/painel/orcamentos?agendamento=${a.id}#novo-orcamento`}>{a.orcamento ? 'Ver/editar orçamento' : 'Enviar orçamento'}</Link>
+                )}
+                {usuario.tipo === 'cliente' && a.orcamento && (
+                  <Link className="botao-secundario botao-pequeno" to={`/painel/orcamentos#orcamento-${a.orcamento.id}`}>Ver orçamento</Link>
                 )}
                 {usuario.tipo === 'cliente' && ['pendente', 'aceito'].includes(a.status) && !a.concluidoEm && (
                   <button className="botao-secundario botao-pequeno" onClick={() => status(a.id, 'cancelado')}>Cancelar</button>

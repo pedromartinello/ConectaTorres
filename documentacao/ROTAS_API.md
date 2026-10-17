@@ -129,7 +129,16 @@ Acesso: prestador autenticado.
 
 Gera uma sugestão de descrição com base nos dados informados pelo próprio prestador. A resposta não altera nem publica o perfil automaticamente.
 
-## Saúde da API - v0.5
+## Saúde da API - v0.6
 
 ### `GET /api/saude`
 Além do status geral, informa se IA e SMTP estão configurados.
+
+
+## Orçamentos - v0.6
+
+- `GET /api/orcamentos` - lista orçamentos do usuário autenticado.
+- `POST /api/orcamentos` - prestador cria ou reenvia uma proposta.
+- `PATCH /api/orcamentos/:id/responder` - cliente aceita ou recusa.
+- `PATCH /api/orcamentos/:id/cancelar` - prestador cancela uma proposta pendente.
+- `GET /api/agendamentos/:id/historico` - linha do tempo do atendimento.

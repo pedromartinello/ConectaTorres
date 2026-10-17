@@ -7,7 +7,7 @@ No arquivo real `backend/.env`, adicione:
 ```env
 IA_HABILITADA=true
 OPENAI_API_KEY=COLOQUE_SUA_CHAVE_REAL_AQUI
-OPENAI_MODELO=gpt-5.6-luna
+OPENAI_MODELO=gpt-5.6-terra
 ```
 
 A chave fica exclusivamente no backend. Nunca use `VITE_OPENAI_API_KEY` e nunca coloque a chave no frontend.
@@ -65,7 +65,7 @@ Exemplo quando tudo está configurado:
 {
   "status": "ok",
   "aplicacao": "ConectaTorres API",
-  "versao": "0.5.0",
+  "versao": "0.6.0",
   "integracoes": {
     "ia": true,
     "email": true

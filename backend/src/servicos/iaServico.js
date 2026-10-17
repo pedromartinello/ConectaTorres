@@ -58,18 +58,21 @@ export async function interpretarNecessidadeComIA({ descricao, categorias }) {
     model: ambiente.ia.modelo,
     reasoning: { effort: 'none' },
     instructions: [
-      'Você é um classificador de necessidades para o marketplace local ConectaTorres.',
-      'Interprete o pedido do cliente e escolha SOMENTE categorias existentes no catálogo fornecido.',
-      'Nunca invente profissionais, preços, avaliações, disponibilidade ou informações cadastrais.',
+      'Você é o assistente de orientação do marketplace local ConectaTorres.',
+      'Converse com uma pessoa leiga e explique, em português do Brasil, quais profissionais podem ajudá-la e por quê.',
+      'Escolha SOMENTE categorias existentes no catálogo fornecido.',
+      'Nunca invente profissionais, preços, avaliações, disponibilidade, diagnóstico técnico definitivo ou informações cadastrais.',
+      'Não dê preço de mercado por conta própria. Valores serão calculados posteriormente pelo backend com dados reais cadastrados.',
+      'Quando o relato puder indicar risco estrutural, elétrico, gás ou outro risco relevante, recomende avaliação presencial de profissional qualificado sem alarmismo.',
       'Retorne de 0 a 4 categorias realmente relacionadas ao pedido, priorizadas da mais importante para a menos importante.',
-      'Se o pedido não se encaixar em nenhuma categoria, retorne a lista de categorias vazia.',
-      'A mensagem deve ser curta, clara e em português do Brasil.'
+      'A orientação deve ter de 2 a 5 frases curtas e úteis. Os passos devem ser objetivos e podem conter no máximo 4 itens.',
+      'Se o pedido não se encaixar em nenhuma categoria, retorne categorias vazias e explique que ainda não há categoria compatível na plataforma.'
     ].join(' '),
     input: `Necessidade do cliente:\n${descricao}\n\nCategorias disponíveis:\n${catalogo}`,
     text: {
       format: {
         type: 'json_schema',
-        name: 'interpretacao_necessidade',
+        name: 'orientacao_necessidade',
         strict: true,
         schema: {
           type: 'object',
@@ -84,9 +87,14 @@ export async function interpretarNecessidadeComIA({ descricao, categorias }) {
               items: { type: 'string' },
               maxItems: 6
             },
-            mensagem: { type: 'string' }
+            orientacao: { type: 'string', maxLength: 1600 },
+            passos: {
+              type: 'array',
+              items: { type: 'string', maxLength: 240 },
+              maxItems: 4
+            }
           },
-          required: ['categorias', 'termos', 'mensagem'],
+          required: ['categorias', 'termos', 'orientacao', 'passos'],
           additionalProperties: false
         }
       }
@@ -97,6 +105,8 @@ export async function interpretarNecessidadeComIA({ descricao, categorias }) {
   const permitidas = new Set(slugs);
   resultado.categorias = [...new Set((resultado.categorias || []).filter((slug) => permitidas.has(slug)))].slice(0, 4);
   resultado.termos = [...new Set((resultado.termos || []).map((t) => String(t).trim()).filter(Boolean))].slice(0, 6);
+  resultado.passos = (resultado.passos || []).map((t) => String(t).trim()).filter(Boolean).slice(0, 4);
+  resultado.orientacao = String(resultado.orientacao || '').trim();
   return resultado;
 }
 

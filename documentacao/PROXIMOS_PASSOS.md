@@ -1,26 +1,33 @@
-# Próximos passos
+# Próximos passos após a v0.6
 
-A v0.5 entrega as duas integrações externas planejadas para o protótipo: LLM e e-mail de recuperação de senha.
+## v0.7 - comunicação e refinamentos
 
-## v1.0 - fechamento do PDS
+- e-mails transacionais para orçamento e agendamento;
+- confirmação de e-mail no cadastro;
+- lembrete de atendimento;
+- melhorias pontuais de UX encontradas nos testes.
 
-Antes de chamar o projeto de v1.0:
+## v0.8 - primeiro deploy
 
-- executar o roteiro completo de testes de cliente, prestador e administrador;
-- validar busca tradicional e busca assistida por IA;
-- revisar responsividade;
-- revisar mensagens e textos em português;
-- revisar permissões e rate limits;
-- preparar dados de demonstração;
-- revisar documentação da API;
-- preparar apresentação e roteiro de demonstração.
+- frontend em hospedagem web;
+- backend e PostgreSQL em nuvem;
+- variáveis de produção;
+- CORS/cookies de produção;
+- armazenamento persistente de imagens;
+- domínio de teste.
 
-## Evoluções futuras
+## v0.9 - preparação final
 
-- migrations formais para produção;
-- armazenamento externo de imagens;
-- testes automatizados de integração e interface;
-- deploy do frontend, backend e PostgreSQL;
-- provedor transacional de e-mail em produção;
-- métricas de uso e custos da IA;
-- geração de imagens como evolução opcional, fora do protótipo principal.
+- migrations em vez de `sync({ alter: true })`;
+- revisão de segurança;
+- logs e tratamento de falhas;
+- testes finais;
+- documentação da apresentação.
+
+## v1.0
+
+- versão publicada e estável do PDS;
+- README final;
+- dados de demonstração;
+- revisão responsiva e visual;
+- roteiro de apresentação e demonstração.

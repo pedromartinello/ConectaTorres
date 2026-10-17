@@ -13,13 +13,14 @@ import denunciaRotas from './denunciaRotas.js';
 import adminRotas from './adminRotas.js';
 import painelRotas from './painelRotas.js';
 import iaRotas from './iaRotas.js';
+import orcamentoRotas from './orcamentoRotas.js';
 import { ambiente } from '../configuracao/ambiente.js';
 
 const router = Router();
 router.get('/saude', (req, res) => res.json({
   status: 'ok',
   aplicacao: 'ConectaTorres API',
-  versao: '0.5.0',
+  versao: '0.6.0',
   integracoes: {
     ia: ambiente.ia.habilitada && ambiente.ia.configurada,
     email: ambiente.email.configurado
@@ -32,6 +33,7 @@ router.use('/prestadores', prestadorRotas);
 router.use('/servicos', servicoRotas);
 router.use('/disponibilidades', disponibilidadeRotas);
 router.use('/agendamentos', agendamentoRotas);
+router.use('/orcamentos', orcamentoRotas);
 router.use('/avaliacoes', avaliacaoRotas);
 router.use('/favoritos', favoritoRotas);
 router.use('/notificacoes', notificacaoRotas);

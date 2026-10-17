@@ -36,7 +36,7 @@ export function Inicio() {
       });
       const categoriasIA = dados.interpretacao?.categorias || [];
       if (!categoriasIA.length) {
-        setErroIA(dados.interpretacao?.mensagem || 'Não foi possível relacionar o pedido às categorias atuais da plataforma.');
+        setErroIA(dados.interpretacao?.orientacao || 'Não foi possível relacionar o pedido às categorias atuais da plataforma.');
         return;
       }
       const params = new URLSearchParams({
@@ -47,7 +47,9 @@ export function Inicio() {
         state: {
           buscaIA: {
             descricao: texto,
-            mensagem: dados.interpretacao.mensagem,
+            orientacao: dados.interpretacao.orientacao,
+            passos: dados.interpretacao.passos || [],
+            faixaValores: dados.interpretacao.faixaValores || null,
             categorias: categoriasIA
           }
         }
@@ -79,10 +81,10 @@ export function Inicio() {
       <section className="container secao secao-ia">
         <div className="busca-ia-cartao">
           <div className="busca-ia-apresentacao">
-            <span className="rotulo">Busca inteligente</span>
-            <h2>Não sabe qual profissional procurar?</h2>
-            <p>Explique o problema com suas próprias palavras. A IA identifica as categorias compatíveis e o ConectaTorres busca somente prestadores realmente cadastrados.</p>
-            <div className="selo-ia">✦ IA apenas interpreta sua necessidade; dados de profissionais vêm da plataforma.</div>
+            <span className="rotulo">Assistente inteligente</span>
+            <h2>Explique o problema. O ConectaTorres orienta por onde começar.</h2>
+            <p>Conte o que está acontecendo com suas próprias palavras. A IA explica quais profissionais podem ajudar e o sistema cruza a orientação com prestadores e valores de referência realmente cadastrados.</p>
+            <div className="selo-ia">✦ A IA orienta. Profissionais, avaliações, agenda e valores exibidos vêm dos dados reais da plataforma.</div>
           </div>
           <form className="formulario busca-ia-formulario" onSubmit={pesquisarComIA}>
             <label htmlFor="necessidade-ia">
@@ -100,7 +102,7 @@ export function Inicio() {
             {iaConfigurada === false && <div className="alerta informacao">A busca inteligente está pronta no sistema, mas falta configurar a chave da API de IA no backend.</div>}
             {erroIA && <div className="alerta erro">{erroIA}</div>}
             <button className="botao largura-botao" disabled={processandoIA || iaConfigurada === false}>
-              {processandoIA ? 'Interpretando necessidade...' : 'Encontrar com IA'}
+              {processandoIA ? 'Analisando sua necessidade...' : 'Receber orientação e encontrar profissionais'}
             </button>
           </form>
         </div>

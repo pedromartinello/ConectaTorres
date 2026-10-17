@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.0
+
+- Adiciona módulo de orçamentos vinculado às solicitações.
+- Cliente pode aceitar ou recusar propostas.
+- Prestador pode criar, revisar, reenviar e cancelar orçamento.
+- Adiciona histórico cronológico do atendimento e da negociação.
+- Adiciona notificações e métricas de orçamento no painel.
+- Integra Agenda e Orçamentos com navegação direta.
+- Amplia o assistente de IA com orientação em linguagem simples e próximos passos.
+- Faixa de valores da IA passa a vir apenas de preços de referência reais cadastrados no PostgreSQL.
+- Modelo de exemplo da IA atualizado para `gpt-5.6-terra`.
+
 ## v0.5.0
 
 - Busca inteligente em linguagem natural integrada à OpenAI Responses API.

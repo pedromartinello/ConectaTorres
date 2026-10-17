@@ -67,3 +67,18 @@ A LLM não recebe controle sobre preço, avaliação, agenda ou cadastro de prof
 ### E-mail
 
 A recuperação de senha usa SMTP via Nodemailer. O token bruto é enviado apenas no link do e-mail; no PostgreSQL permanece somente o hash SHA-256 e a data de expiração.
+
+
+## Fluxo comercial da v0.6
+
+A v0.6 adiciona uma camada comercial sobre o agendamento sem substituir a agenda existente:
+
+```text
+Agendamento/Solicitação
+    -> Orçamento (opcional, 1 por solicitação)
+    -> Resposta do cliente
+    -> confirmação/execução
+    -> histórico cronológico
+```
+
+Novas tabelas: `orcamentos` e `historicos_atendimento`. O histórico registra eventos do fluxo sem usar a LLM para dados transacionais.

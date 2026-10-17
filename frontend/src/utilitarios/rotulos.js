@@ -26,3 +26,15 @@ export function rotuloTipoUsuario(tipo) {
   };
   return rotulos[tipo] || tipo;
 }
+
+
+export function rotuloStatusOrcamento(status) {
+  const rotulos = {
+    enviado: 'Aguardando resposta',
+    aceito: 'Aceito',
+    recusado: 'Recusado',
+    cancelado: 'Cancelado',
+    expirado: 'Expirado'
+  };
+  return rotulos[status] || status;
+}
