@@ -50,13 +50,15 @@
 
 ## v0.2.0
 - Base funcional com autenticacao, cadastro, login, busca e estrutura inicial da aplicacao.
-## v0.7.0
+## v0.8.0 — Deploy e preparação para produção
 
-- Confirmação de e-mail para novas contas.
-- Reenvio de link de confirmação.
-- Nova confirmação ao alterar o endereço de e-mail.
-- Login bloqueado para novas contas pendentes de confirmação.
-- E-mails automáticos para solicitação, definição/alteração de período, atualização do agendamento, orçamento, resposta de orçamento e conclusão.
-- Versionamento de revisões de orçamento.
-- Melhorias visuais na linha do tempo do atendimento.
-- Admin passa a visualizar o estado de verificação do e-mail.
+- Suporte a `DATABASE_URL` para PostgreSQL em nuvem.
+- Suporte automático à variável `PORT` do provedor.
+- CORS com múltiplas origens configuráveis.
+- Cookies ajustáveis para hospedagem em domínios diferentes.
+- Diretório configurável para uploads persistentes.
+- Encerramento gracioso do servidor.
+- Pool de conexões do Sequelize para produção.
+- Configuração Vercel para SPA/React Router.
+- Documentação de deploy Vercel + Railway.
+- Checklist de produção.

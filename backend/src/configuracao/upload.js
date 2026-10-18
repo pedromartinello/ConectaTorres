@@ -3,8 +3,13 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { ambiente } from './ambiente.js';
 
-export const pastaUploads = fileURLToPath(new URL('../../uploads/', import.meta.url));
+const pastaPadrao = fileURLToPath(new URL('../../uploads/', import.meta.url));
+export const pastaUploads = ambiente.upload.diretorio
+  ? path.resolve(ambiente.upload.diretorio)
+  : pastaPadrao;
+
 const pastaPerfis = path.join(pastaUploads, 'perfis');
 const pastaPortfolio = path.join(pastaUploads, 'portfolio');
 
@@ -43,7 +48,8 @@ export const uploadPortfolio = criarUpload(pastaPortfolio).single('imagem');
 export function removerArquivoPorUrl(url) {
   if (!url || !url.startsWith('/uploads/')) return;
   const relativo = url.replace('/uploads/', '');
+  const raiz = path.resolve(pastaUploads);
   const caminho = path.resolve(pastaUploads, relativo);
-  if (!caminho.startsWith(path.resolve(pastaUploads))) return;
+  if (!caminho.startsWith(`${raiz}${path.sep}`) && caminho !== raiz) return;
   if (fs.existsSync(caminho)) fs.unlinkSync(caminho);
 }

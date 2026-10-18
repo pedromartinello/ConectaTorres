@@ -13,12 +13,23 @@ export function verificarToken(token) {
   return jwt.verify(token, ambiente.jwt.segredo);
 }
 
-export function opcoesCookieToken() {
+function baseCookie() {
   return {
     httpOnly: true,
-    secure: ambiente.nodeEnv === 'production',
-    sameSite: 'lax',
-    maxAge: 8 * 60 * 60 * 1000,
-    path: '/'
+    secure: ambiente.producao,
+    sameSite: ambiente.cookie.sameSite,
+    path: '/',
+    ...(ambiente.cookie.dominio ? { domain: ambiente.cookie.dominio } : {})
   };
+}
+
+export function opcoesCookieToken() {
+  return {
+    ...baseCookie(),
+    maxAge: 8 * 60 * 60 * 1000
+  };
+}
+
+export function opcoesLimparCookieToken() {
+  return baseCookie();
 }

@@ -20,7 +20,7 @@ export async function api(caminho, opcoes = {}) {
       headers
     });
   } catch {
-    throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando na porta 3001.');
+    throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.');
   }
 
   if (resposta.status === 204) return null;

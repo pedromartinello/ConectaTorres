@@ -20,7 +20,8 @@ const router = Router();
 router.get('/saude', (req, res) => res.json({
   status: 'ok',
   aplicacao: 'ConectaTorres API',
-  versao: '0.7.0',
+  versao: '0.8.0',
+  ambiente: ambiente.nodeEnv,
   integracoes: {
     ia: ambiente.ia.habilitada && ambiente.ia.configurada,
     email: ambiente.email.configurado

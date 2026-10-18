@@ -29,3 +29,6 @@ Thumbs.db
 # Temporarios
 *.tmp
 *.swp
+
+# Metadados locais de deploy
+.vercel/

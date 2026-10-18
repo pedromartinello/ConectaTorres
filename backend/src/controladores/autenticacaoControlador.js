@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { Usuario, PerfilPrestador } from '../modelos/index.js';
-import { gerarToken, opcoesCookieToken } from '../utilitarios/token.js';
+import { gerarToken, opcoesCookieToken, opcoesLimparCookieToken } from '../utilitarios/token.js';
 import { ambiente } from '../configuracao/ambiente.js';
 import { emailEstaConfigurado, enviarEmailRecuperacaoSenha } from '../servicos/emailServico.js';
 import { confirmarEmailPorToken, prepararConfirmacaoEmail } from '../servicos/confirmacaoEmailServico.js';
@@ -104,7 +104,7 @@ export async function reenviarConfirmacaoEmail(req, res) {
 }
 
 export async function logout(req, res) {
-  res.clearCookie('token', { path: '/' });
+  res.clearCookie('token', opcoesLimparCookieToken());
   return res.status(204).send();
 }
 
@@ -176,6 +176,6 @@ export async function redefinirSenha(req, res) {
     tokenRedefinicaoExpiraEm: null
   });
 
-  res.clearCookie('token', { path: '/' });
+  res.clearCookie('token', opcoesLimparCookieToken());
   return res.json({ mensagem: 'Senha redefinida com sucesso. Você já pode entrar com a nova senha.' });
 }
