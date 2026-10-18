@@ -50,6 +50,9 @@ export const ambiente = {
     minutosExpiracao: Number(process.env.RECUPERACAO_SENHA_MINUTOS || 30),
     exibirLinkDesenvolvimento: booleano(process.env.RECUPERACAO_EXIBIR_LINK, true)
   },
+  confirmacaoEmail: {
+    horasExpiracao: Number(process.env.CONFIRMACAO_EMAIL_HORAS || 24)
+  },
   email: {
     configurado: Boolean(valorReal(smtpHost) && valorReal(smtpUsuario) && valorReal(smtpSenha)),
     host: smtpHost,

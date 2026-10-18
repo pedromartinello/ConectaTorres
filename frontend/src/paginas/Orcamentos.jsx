@@ -200,8 +200,8 @@ export function Orcamentos() {
         <section id="novo-orcamento" tabIndex="-1" className="formulario-cartao alvo-navegacao orcamento-formulario">
           <div className="titulo-linha">
             <div>
-              <h2>{formulario.agendamentoId ? 'Preparar orçamento' : 'Novo orçamento'}</h2>
-              <p className="texto-suave">Selecione uma solicitação com período já definido. O cliente receberá a proposta na área de orçamentos.</p>
+              <h2>{formulario.agendamentoId ? (orcamentos.find((o) => o.agendamentoId === formulario.agendamentoId) ? 'Revisar orçamento' : 'Preparar orçamento') : 'Novo orçamento'}</h2>
+              <p className="texto-suave">Selecione uma solicitação com período já definido. Se já existir uma proposta, o reenvio será registrado como uma nova versão do orçamento.</p>
             </div>
             {formulario.agendamentoId && <button type="button" className="botao-secundario" onClick={limparFormulario}>Limpar</button>}
           </div>
@@ -214,7 +214,7 @@ export function Orcamentos() {
                   <button key={a.id} type="button" className="orcamento-elegivel" onClick={() => abrirFormulario(a, existente)} disabled={existente?.status === 'aceito'}>
                     <strong>{a.servico?.titulo || 'Serviço não especificado'}</strong>
                     <span>{a.cliente?.nome} • {dataHora(a.inicio)}</span>
-                    <small>{existente ? `Orçamento ${rotuloStatusOrcamento(existente.status).toLowerCase()}` : 'Ainda sem orçamento'}</small>
+                    <small>{existente ? `Versão ${existente.revisao || 1} • ${rotuloStatusOrcamento(existente.status).toLowerCase()}` : 'Ainda sem orçamento'}</small>
                   </button>
                 );
               })}
@@ -239,7 +239,7 @@ export function Orcamentos() {
                 <label className="campo-checkbox-linha campo-checkbox-orcamento"><input type="checkbox" checked={formulario.materiaisInclusos} onChange={(e) => setFormulario({ ...formulario, materiaisInclusos: e.target.checked })} /><span>Os materiais estão incluídos neste valor</span></label>
                 <label>Observações<textarea maxLength="2000" rows="3" value={formulario.observacoes} onChange={(e) => setFormulario({ ...formulario, observacoes: e.target.value })} placeholder="Condições, forma de execução ou informações importantes para o cliente." /></label>
                 <div className="acoes">
-                  <button className="botao" disabled={salvando}>{salvando ? 'Enviando...' : 'Enviar orçamento'}</button>
+                  <button className="botao" disabled={salvando}>{salvando ? 'Enviando...' : (orcamentos.some((o) => o.agendamentoId === formulario.agendamentoId) ? 'Revisar e reenviar' : 'Enviar orçamento')}</button>
                   <button type="button" className="botao-secundario" onClick={limparFormulario}>Cancelar</button>
                 </div>
               </form>
@@ -267,7 +267,7 @@ export function Orcamentos() {
                 <article id={`orcamento-${o.id}`} tabIndex="-1" className="orcamento-cartao alvo-navegacao" key={o.id}>
                   <div className="orcamento-topo">
                     <div>
-                      <div className="tags"><span className={`status status-orcamento-${o.status}`}>{rotuloStatusOrcamento(o.status)}</span>{o.materiaisInclusos && <span className="tag-neutra">Materiais inclusos</span>}</div>
+                      <div className="tags"><span className={`status status-orcamento-${o.status}`}>{rotuloStatusOrcamento(o.status)}</span><span className="tag-neutra">Versão {o.revisao || 1}</span>{o.materiaisInclusos && <span className="tag-neutra">Materiais inclusos</span>}</div>
                       <h3>{a?.servico?.titulo || 'Serviço não especificado'}</h3>
                       <p className="texto-suave">{usuario.tipo === 'prestador' ? `Cliente: ${o.cliente?.nome}` : `Prestador: ${o.prestador?.nome}`}</p>
                     </div>
@@ -281,7 +281,7 @@ export function Orcamentos() {
                       <div><span>Validade</span><strong>{dataCurta(o.validade)}</strong></div>
                     </div>
                     {o.observacoes && <div><span>Observações</span><p>{o.observacoes}</p></div>}
-                    <div className="orcamento-metadados"><span>Enviado em {dataHora(o.createdAt)}</span>{o.respondidoEm && <span>Respondido em {dataHora(o.respondidoEm)}</span>}</div>
+                    <div className="orcamento-metadados"><span>Primeiro envio em {dataHora(o.createdAt)}</span><span>Última atualização em {dataHora(o.updatedAt)}</span>{o.respondidoEm && <span>Respondido em {dataHora(o.respondidoEm)}</span>}</div>
                   </div>
 
                   <div className="acoes orcamento-acoes">
@@ -297,7 +297,7 @@ export function Orcamentos() {
                   {historico && (
                     <div className="timeline-atendimento">
                       {historico.map((item) => (
-                        <div className="timeline-item" key={item.id}>
+                        <div className={`timeline-item timeline-${item.tipo || 'geral'}`} key={item.id}>
                           <span className="timeline-ponto" />
                           <div><strong>{item.titulo}</strong><span>{dataHora(item.createdAt)}{item.usuario?.nome ? ` • ${item.usuario.nome}` : ''}</span>{item.descricao && <p>{item.descricao}</p>}</div>
                         </div>

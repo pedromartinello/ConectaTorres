@@ -22,8 +22,8 @@ export function ProvedorAutenticacao({ children }) {
 
   async function cadastrar(dadosCadastro) {
     const dados = await api('/autenticacao/cadastro', { method: 'POST', body: JSON.stringify(dadosCadastro) });
-    setUsuario(dados.usuario);
-    return dados.usuario;
+    if (dados.usuario) setUsuario(dados.usuario);
+    return dados;
   }
 
   async function sair() {

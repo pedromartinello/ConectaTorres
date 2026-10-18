@@ -7,6 +7,7 @@ export function Entrar() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
+  const [emailNaoConfirmado, setEmailNaoConfirmado] = useState('');
   const [enviando, setEnviando] = useState(false);
   const { entrar } = useAutenticacao();
   const navegar = useNavigate();
@@ -14,12 +15,14 @@ export function Entrar() {
   async function enviar(evento) {
     evento.preventDefault();
     setErro('');
+    setEmailNaoConfirmado('');
     setEnviando(true);
     try {
       await entrar(email, senha);
       navegar('/painel');
     } catch (e) {
       setErro(e.message);
+      if (e.dados?.codigo === 'EMAIL_NAO_CONFIRMADO') setEmailNaoConfirmado(e.dados.email || email);
     } finally {
       setEnviando(false);
     }
@@ -31,13 +34,10 @@ export function Entrar() {
         <span className="rotulo">Acesso</span>
         <h1>Entrar na conta</h1>
         <p className="texto-suave">Acesse seu painel do ConectaTorres.</p>
-        <label htmlFor="email-login">
-          E-mail
-          <input id="email-login" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-        </label>
+        <label htmlFor="email-login">E-mail<input id="email-login" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></label>
         <CampoSenha id="senha-login" nome="senha" rotulo="Senha" valor={senha} aoAlterar={(e) => setSenha(e.target.value)} autoComplete="current-password" />
         <div className="linha-entre-campos"><Link className="link-destaque texto-pequeno" to="/esqueci-senha">Esqueci minha senha</Link></div>
-        {erro && <div className="alerta erro">{erro}</div>}
+        {erro && <div className="alerta erro">{erro}{emailNaoConfirmado && <div className="margem-topo-pequena"><Link className="link-destaque" to={`/confirmar-email?email=${encodeURIComponent(emailNaoConfirmado)}`}>Reenviar confirmação →</Link></div>}</div>}
         <button className="botao" disabled={enviando}>{enviando ? 'Entrando...' : 'Entrar'}</button>
         <p className="texto-suave">Ainda não possui conta? <Link className="link-destaque" to="/cadastro">Criar conta</Link></p>
       </form>

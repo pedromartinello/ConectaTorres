@@ -1,33 +1,26 @@
-# Próximos passos após a v0.6
+# Próximos passos após a v0.7
 
-## v0.7 - comunicação e refinamentos
+## v0.8 - primeiro deploy e ambiente de produção
 
-- e-mails transacionais para orçamento e agendamento;
-- confirmação de e-mail no cadastro;
-- lembrete de atendimento;
-- melhorias pontuais de UX encontradas nos testes.
+- Publicar frontend, backend e PostgreSQL em ambiente de teste.
+- Configurar URLs reais de frontend/backend e CORS.
+- Configurar variáveis de ambiente na hospedagem.
+- Definir persistência de uploads fora do disco efêmero.
+- Testar SMTP e OpenAI no ambiente publicado.
+- Corrigir diferenças entre localhost e produção.
 
-## v0.8 - primeiro deploy
+## v0.9 - endurecimento técnico
 
-- frontend em hospedagem web;
-- backend e PostgreSQL em nuvem;
-- variáveis de produção;
-- CORS/cookies de produção;
-- armazenamento persistente de imagens;
-- domínio de teste.
+- Trocar `sequelize.sync({ alter: true })` por migrations.
+- Revisar cookies seguros/HTTPS.
+- Adicionar logs e tratamento de erros de produção.
+- Rever política de uploads.
+- Preparar dados de demonstração.
+- Revisar testes funcionais e documentação.
 
-## v0.9 - preparação final
+## v1.0 - entrega
 
-- migrations em vez de `sync({ alter: true })`;
-- revisão de segurança;
-- logs e tratamento de falhas;
-- testes finais;
-- documentação da apresentação.
-
-## v1.0
-
-- versão publicada e estável do PDS;
-- README final;
-- dados de demonstração;
-- revisão responsiva e visual;
-- roteiro de apresentação e demonstração.
+- Revisão responsiva final.
+- README e documentação de implantação.
+- Testes completos de cliente, prestador e administrador.
+- Tag e release final.

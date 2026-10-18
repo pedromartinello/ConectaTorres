@@ -417,3 +417,38 @@ tr:last-child td { border-bottom: 0; }
   .orcamento-topo { flex-direction: column; }
   .orcamento-valor { white-space: normal; }
 }
+
+/* v0.7 - comunicação, confiança e verificação de e-mail */
+.aviso-cadastro-email {
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: #f2faf7;
+  border: 1px solid #cfe2dc;
+  color: var(--cor-primaria-escura);
+  font-size: .84rem;
+  line-height: 1.5;
+}
+.confirmacao-email-cartao { max-width: 620px; width: 100%; }
+.estado-confirmacao-email { display: flex; align-items: center; gap: 12px; padding: 18px 0; color: var(--cor-suave); }
+.spinner-simples { width: 20px; height: 20px; border: 3px solid #dce7e3; border-top-color: var(--cor-primaria); border-radius: 50%; animation: girar .8s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.botao-link-bloco { display: inline-flex; width: fit-content; margin-top: 10px; }
+.alerta.informacao { background: #f2f8ff; border-color: #bfd7f4; color: #24567a; }
+.margem-topo-pequena { margin-top: 8px; }
+.secao-status-email { border-left: 4px solid var(--cor-primaria); }
+.status-email { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .025em; }
+.status-email.verificado { background: #ecfdf3; color: #067647; }
+.status-email.pendente { background: #fff7e6; color: #9a6700; }
+.status-email.compacto { padding: 4px 7px; font-size: .68rem; }
+.linha-verificacao-email { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; padding: 14px; border-radius: 12px; background: var(--cor-fundo); border: 1px solid var(--cor-borda); }
+.timeline-orcamento_aceito .timeline-ponto,
+.timeline-atendimento_concluido .timeline-ponto { background: #067647; box-shadow: 0 0 0 4px #dcfae6; }
+.timeline-orcamento_recusado .timeline-ponto,
+.timeline-orcamento_cancelado .timeline-ponto,
+.timeline-agendamento_cancelado .timeline-ponto,
+.timeline-agendamento_recusado .timeline-ponto { background: var(--cor-erro); box-shadow: 0 0 0 4px #fee4e2; }
+.timeline-orcamento_revisado .timeline-ponto { background: #b7791f; box-shadow: 0 0 0 4px #fef3c7; }
+
+@media (max-width: 620px) {
+  .linha-verificacao-email { align-items: flex-start; flex-direction: column; }
+}

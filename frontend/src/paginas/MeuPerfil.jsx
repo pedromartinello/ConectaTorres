@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../servicos/api.js';
 import { useAutenticacao } from '../contextos/ContextoAutenticacao.jsx';
 import { CampoSenha } from '../componentes/CampoSenha.jsx';
@@ -13,6 +14,7 @@ export function MeuPerfil() {
   const [enviandoFoto, setEnviandoFoto] = useState(false);
   const [salvandoDados, setSalvandoDados] = useState(false);
   const [salvandoSenha, setSalvandoSenha] = useState(false);
+  const [reenviandoConfirmacao, setReenviandoConfirmacao] = useState(false);
   const [previewFoto, setPreviewFoto] = useState('');
 
   useEffect(() => setForm({ nome: usuario.nome, email: usuario.email, telefone: usuario.telefone || '' }), [usuario]);
@@ -25,13 +27,26 @@ export function MeuPerfil() {
     limparAvisos();
     setSalvandoDados(true);
     try {
-      await api('/usuarios/meu-perfil', { method: 'PUT', body: JSON.stringify(form) });
+      const dados = await api('/usuarios/meu-perfil', { method: 'PUT', body: JSON.stringify(form) });
       await recarregarUsuario();
-      setMensagem('Dados pessoais atualizados.');
+      setMensagem(dados.mensagem || 'Dados pessoais atualizados.');
     } catch (x) {
       setErro(x.message);
     } finally {
       setSalvandoDados(false);
+    }
+  }
+
+  async function reenviarConfirmacao() {
+    limparAvisos();
+    setReenviandoConfirmacao(true);
+    try {
+      const dados = await api('/autenticacao/reenviar-confirmacao', { method: 'POST', body: JSON.stringify({ email: usuario.email }) });
+      setMensagem(dados.mensagem);
+    } catch (x) {
+      setErro(x.message);
+    } finally {
+      setReenviandoConfirmacao(false);
     }
   }
 
@@ -99,7 +114,22 @@ export function MeuPerfil() {
       {mensagem && <div className="alerta sucesso">{mensagem}</div>}
       {erro && <div className="alerta erro">{erro}</div>}
 
-      <section className="formulario-cartao">
+      <section className="formulario-cartao secao-status-email">
+        <div className="titulo-linha">
+          <div>
+            <h2>Verificação de e-mail</h2>
+            <p className="texto-suave">Usamos seu e-mail para segurança da conta, recuperação de senha e avisos importantes.</p>
+          </div>
+          <span className={`status-email ${usuario.emailVerificado === false ? 'pendente' : 'verificado'}`}>{usuario.emailVerificado === false ? 'Pendente' : 'Verificado'}</span>
+        </div>
+        <div className="linha-verificacao-email">
+          <strong>{usuario.email}</strong>
+          {usuario.emailVerificado === false ? <button className="botao-secundario" onClick={reenviarConfirmacao} disabled={reenviandoConfirmacao}>{reenviandoConfirmacao ? 'Enviando...' : 'Reenviar confirmação'}</button> : <span className="texto-suave">Endereço confirmado com segurança.</span>}
+        </div>
+        {usuario.emailVerificado === false && <p className="ajuda-campo">Ao sair da conta, será necessário confirmar este endereço antes do próximo login. <Link className="link-destaque" to={`/confirmar-email?email=${encodeURIComponent(usuario.email)}`}>Abrir confirmação</Link></p>}
+      </section>
+
+      <section className="formulario-cartao secao-interna">
         <h2>Foto de perfil</h2>
         <div className="upload-perfil">
           {previewFoto ? <img className="avatar avatar-extra preview-avatar" src={previewFoto} alt="Pré-visualização da nova foto" /> : <Avatar nome={usuario.nome} fotoUrl={usuario.fotoUrl} tamanho="extra" />}

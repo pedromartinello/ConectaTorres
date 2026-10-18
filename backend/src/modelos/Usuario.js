@@ -12,6 +12,8 @@ export class Usuario extends Model {
     delete valores.senhaHash;
     delete valores.tokenRedefinicaoSenha;
     delete valores.tokenRedefinicaoExpiraEm;
+    delete valores.tokenConfirmacaoEmail;
+    delete valores.tokenConfirmacaoExpiraEm;
     return valores;
   }
 }
@@ -26,6 +28,9 @@ Usuario.init(
     senhaHash: { type: DataTypes.STRING, allowNull: false, field: 'senha_hash' },
     tokenRedefinicaoSenha: { type: DataTypes.STRING(64), allowNull: true, field: 'token_redefinicao_senha' },
     tokenRedefinicaoExpiraEm: { type: DataTypes.DATE, allowNull: true, field: 'token_redefinicao_expira_em' },
+    emailVerificado: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: 'email_verificado' },
+    tokenConfirmacaoEmail: { type: DataTypes.STRING(64), allowNull: true, field: 'token_confirmacao_email' },
+    tokenConfirmacaoExpiraEm: { type: DataTypes.DATE, allowNull: true, field: 'token_confirmacao_expira_em' },
     tipo: {
       type: DataTypes.ENUM('cliente', 'prestador', 'admin'),
       allowNull: false,

@@ -7,7 +7,9 @@ import {
   logout,
   eu,
   solicitarRedefinicaoSenha,
-  redefinirSenha
+  redefinirSenha,
+  confirmarEmail,
+  reenviarConfirmacaoEmail
 } from '../controladores/autenticacaoControlador.js';
 import { exigirAutenticacao } from '../intermediarios/autenticacao.js';
 import { validarRequisicao } from '../intermediarios/validacao.js';
@@ -16,6 +18,7 @@ import { asyncHandler } from '../utilitarios/asyncHandler.js';
 const router = Router();
 const limiteAutenticacao = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false });
 const limiteRecuperacao = rateLimit({ windowMs: 15 * 60 * 1000, limit: 8, standardHeaders: 'draft-8', legacyHeaders: false });
+const limiteConfirmacao = rateLimit({ windowMs: 15 * 60 * 1000, limit: 8, standardHeaders: 'draft-8', legacyHeaders: false });
 
 function validarSenha(campo = 'senha') {
   return body(campo)
@@ -36,6 +39,14 @@ router.post('/login', limiteAutenticacao, [
   body('email').isEmail().normalizeEmail(),
   body('senha').notEmpty()
 ], validarRequisicao, asyncHandler(login));
+
+router.post('/confirmar-email', limiteConfirmacao, [
+  body('token').isString().isLength({ min: 64, max: 64 })
+], validarRequisicao, asyncHandler(confirmarEmail));
+
+router.post('/reenviar-confirmacao', limiteConfirmacao, [
+  body('email').isEmail().normalizeEmail()
+], validarRequisicao, asyncHandler(reenviarConfirmacaoEmail));
 
 router.post('/esqueci-senha', limiteRecuperacao, [
   body('email').isEmail().normalizeEmail()

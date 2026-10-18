@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import { Agendamento, Orcamento, Servico, Usuario } from '../modelos/index.js';
 import { criarNotificacao } from '../utilitarios/notificacoes.js';
 import { registrarHistorico } from '../utilitarios/historico.js';
+import { enviarEmailEventoSeguro } from '../utilitarios/emailsEventos.js';
 
 const inclusoes = [
   {
@@ -70,6 +71,7 @@ export async function enviarOrcamento(req, res) {
   const novoOrcamento = !orcamento;
   if (orcamento?.status === 'aceito') return res.status(409).json({ mensagem: 'Este orçamento já foi aceito e não pode ser alterado.' });
 
+  const proximaRevisao = novoOrcamento ? 1 : Number(orcamento.revisao || 1) + 1;
   const dados = {
     agendamentoId: agendamento.id,
     prestadorId: req.usuario.id,
@@ -80,25 +82,43 @@ export async function enviarOrcamento(req, res) {
     observacoes: String(req.body.observacoes || '').trim() || null,
     validade,
     status: 'enviado',
-    respondidoEm: null
+    respondidoEm: null,
+    revisao: proximaRevisao
   };
 
   if (orcamento) await orcamento.update(dados);
   else orcamento = await Orcamento.create(dados);
 
+  const tituloHistorico = novoOrcamento ? 'Orçamento enviado' : `Orçamento revisado • versão ${proximaRevisao}`;
+  const tipoHistorico = novoOrcamento ? 'orcamento_enviado' : 'orcamento_revisado';
   await registrarHistorico({
     agendamentoId: agendamento.id,
     usuarioId: req.usuario.id,
-    tipo: 'orcamento_enviado',
-    titulo: 'Orçamento enviado',
-    descricao: `Orçamento de R$ ${valor.toFixed(2).replace('.', ',')} enviado ao cliente.`
+    tipo: tipoHistorico,
+    titulo: tituloHistorico,
+    descricao: `${novoOrcamento ? 'Orçamento' : 'Nova versão do orçamento'} de R$ ${valor.toFixed(2).replace('.', ',')} enviada ao cliente.`
   });
+
+  const tituloNotificacao = novoOrcamento ? 'Novo orçamento recebido' : 'Orçamento revisado pelo prestador';
+  const mensagemNotificacao = novoOrcamento
+    ? `${req.usuario.nome} enviou um orçamento para ${agendamento.servico?.titulo || 'sua solicitação'}.`
+    : `${req.usuario.nome} enviou a versão ${proximaRevisao} do orçamento para ${agendamento.servico?.titulo || 'sua solicitação'}.`;
+  const link = `/painel/orcamentos#orcamento-${orcamento.id}`;
+
   await criarNotificacao({
     usuarioId: agendamento.clienteId,
     tipo: 'orcamento',
-    titulo: 'Novo orçamento recebido',
-    mensagem: `${req.usuario.nome} enviou um orçamento para ${agendamento.servico?.titulo || 'sua solicitação'}.`,
-    link: `/painel/orcamentos#orcamento-${orcamento.id}`
+    titulo: tituloNotificacao,
+    mensagem: mensagemNotificacao,
+    link
+  });
+  await enviarEmailEventoSeguro({
+    usuarioId: agendamento.clienteId,
+    assunto: `${tituloNotificacao} - ConectaTorres`,
+    titulo: tituloNotificacao,
+    mensagem: `${mensagemNotificacao} Valor proposto: R$ ${valor.toFixed(2).replace('.', ',')}.`,
+    link,
+    botaoTexto: 'Analisar orçamento'
   });
 
   const completo = await Orcamento.findByPk(orcamento.id, { include: inclusoes });
@@ -139,18 +159,24 @@ export async function responderOrcamento(req, res) {
     tipo: novoStatus === 'aceito' ? 'orcamento_aceito' : 'orcamento_recusado',
     titulo: novoStatus === 'aceito' ? 'Orçamento aceito' : 'Orçamento recusado',
     descricao: novoStatus === 'aceito'
-      ? 'O cliente aceitou o orçamento enviado pelo prestador.'
-      : 'O cliente recusou o orçamento enviado pelo prestador.'
+      ? `O cliente aceitou a versão ${orcamento.revisao || 1} do orçamento.`
+      : `O cliente recusou a versão ${orcamento.revisao || 1} do orçamento.`
   });
 
-  await criarNotificacao({
+  const titulo = novoStatus === 'aceito' ? 'Orçamento aceito' : 'Orçamento recusado';
+  const mensagem = novoStatus === 'aceito'
+    ? 'O cliente aceitou seu orçamento. Confira o atendimento na agenda.'
+    : 'O cliente recusou seu orçamento. Você pode revisar e enviar uma nova proposta.';
+  const link = `/painel/orcamentos#orcamento-${orcamento.id}`;
+
+  await criarNotificacao({ usuarioId: orcamento.prestadorId, tipo: 'orcamento', titulo, mensagem, link });
+  await enviarEmailEventoSeguro({
     usuarioId: orcamento.prestadorId,
-    tipo: 'orcamento',
-    titulo: novoStatus === 'aceito' ? 'Orçamento aceito' : 'Orçamento recusado',
-    mensagem: novoStatus === 'aceito'
-      ? 'O cliente aceitou seu orçamento. Confira o atendimento na agenda.'
-      : 'O cliente recusou seu orçamento. Você pode revisar e enviar uma nova proposta.',
-    link: `/painel/orcamentos#orcamento-${orcamento.id}`
+    assunto: `${titulo} - ConectaTorres`,
+    titulo,
+    mensagem,
+    link,
+    botaoTexto: novoStatus === 'aceito' ? 'Ver atendimento' : 'Revisar orçamento'
   });
 
   return res.json({ orcamento });
@@ -167,14 +193,23 @@ export async function cancelarOrcamento(req, res) {
     usuarioId: req.usuario.id,
     tipo: 'orcamento_cancelado',
     titulo: 'Orçamento cancelado',
-    descricao: 'O prestador cancelou a proposta enviada.'
+    descricao: `O prestador cancelou a versão ${orcamento.revisao || 1} da proposta enviada.`
   });
+  const link = `/painel/orcamentos#orcamento-${orcamento.id}`;
   await criarNotificacao({
     usuarioId: orcamento.clienteId,
     tipo: 'orcamento',
     titulo: 'Orçamento cancelado',
     mensagem: 'O prestador cancelou o orçamento enviado anteriormente.',
-    link: `/painel/orcamentos#orcamento-${orcamento.id}`
+    link
+  });
+  await enviarEmailEventoSeguro({
+    usuarioId: orcamento.clienteId,
+    assunto: 'Orçamento cancelado - ConectaTorres',
+    titulo: 'Orçamento cancelado',
+    mensagem: 'O prestador cancelou o orçamento enviado anteriormente. Acompanhe a solicitação para verificar novas atualizações.',
+    link,
+    botaoTexto: 'Ver solicitação'
   });
   return res.json({ orcamento });
 }

@@ -19,7 +19,8 @@ Orcamento.init(
       allowNull: false,
       defaultValue: 'enviado'
     },
-    respondidoEm: { type: DataTypes.DATE, allowNull: true, field: 'respondido_em' }
+    respondidoEm: { type: DataTypes.DATE, allowNull: true, field: 'respondido_em' },
+    revisao: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 }
   },
   { sequelize, modelName: 'Orcamento', tableName: 'orcamentos' }
 );

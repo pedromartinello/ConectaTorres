@@ -2,6 +2,7 @@ import { Agendamento, Servico, Usuario, Avaliacao, Orcamento, HistoricoAtendimen
 import { criarNotificacao } from '../utilitarios/notificacoes.js';
 import { registrarHistorico } from '../utilitarios/historico.js';
 import { validarHorarioPrestador, validarHorarioSolicitado } from '../servicos/disponibilidadeServico.js';
+import { enviarEmailEventoSeguro } from '../utilitarios/emailsEventos.js';
 
 const inclusoes = [
   { model: Usuario, as: 'cliente', attributes: ['id', 'nome', 'email', 'telefone', 'fotoUrl'] },
@@ -60,12 +61,21 @@ export async function criarAgendamento(req, res) {
     descricao: `O cliente informou ${inicio.toLocaleString('pt-BR')} como horário de referência.`
   });
 
+  const mensagemSolicitacao = `${req.usuario.nome} informou um horário de referência${servico ? ` para ${servico.titulo}` : ''}. Defina o período do atendimento antes de aceitar.`;
   await criarNotificacao({
     usuarioId: prestadorId,
     tipo: 'agendamento',
     titulo: 'Nova solicitação de atendimento',
-    mensagem: `${req.usuario.nome} informou um horário de referência${servico ? ` para ${servico.titulo}` : ''}. Defina o período do atendimento antes de aceitar.`,
+    mensagem: mensagemSolicitacao,
     link: '/painel/agenda#agendamentos'
+  });
+  await enviarEmailEventoSeguro({
+    usuarioId: prestadorId,
+    assunto: 'Nova solicitação de atendimento - ConectaTorres',
+    titulo: 'Você recebeu uma nova solicitação',
+    mensagem: mensagemSolicitacao,
+    link: '/painel/agenda#agendamentos',
+    botaoTexto: 'Abrir solicitação'
   });
   return res.status(201).json({ agendamento });
 }
@@ -115,12 +125,25 @@ export async function alterarStatus(req, res) {
   });
 
   const destinatario = ehPrestadorDono ? agendamento.clienteId : agendamento.prestadorId;
+  const mensagemStatus = status === 'aceito'
+    ? 'O prestador confirmou o período do atendimento.'
+    : status === 'recusado'
+      ? 'A solicitação de atendimento foi recusada pelo prestador.'
+      : 'O atendimento foi cancelado.';
   await criarNotificacao({
     usuarioId: destinatario,
     tipo: 'agendamento',
-    titulo: 'Agendamento atualizado',
-    mensagem: `O agendamento foi atualizado para ${status}.`,
+    titulo: rotulos[status] || 'Agendamento atualizado',
+    mensagem: mensagemStatus,
     link: '/painel/agenda#agendamentos'
+  });
+  await enviarEmailEventoSeguro({
+    usuarioId: destinatario,
+    assunto: `${rotulos[status] || 'Agendamento atualizado'} - ConectaTorres`,
+    titulo: rotulos[status] || 'Agendamento atualizado',
+    mensagem: mensagemStatus,
+    link: '/painel/agenda#agendamentos',
+    botaoTexto: 'Ver atendimento'
   });
   return res.json({ agendamento });
 }
@@ -150,14 +173,24 @@ export async function ajustarHorario(req, res) {
     titulo: eraSomenteReferencia ? 'Período definido pelo prestador' : 'Horário ajustado',
     descricao: `${inicio.toLocaleString('pt-BR')} até ${fim.toLocaleString('pt-BR')}.`
   });
+  const tituloHorario = eraSomenteReferencia ? 'Período definido pelo prestador' : 'Horário ajustado pelo prestador';
+  const mensagemHorario = eraSomenteReferencia
+    ? 'O prestador definiu o período previsto para sua solicitação. Confira os dados na agenda.'
+    : 'O prestador alterou o horário da sua solicitação. Confira os novos dados.';
   await criarNotificacao({
     usuarioId: agendamento.clienteId,
     tipo: 'agendamento',
-    titulo: eraSomenteReferencia ? 'Período definido pelo prestador' : 'Horário ajustado pelo prestador',
-    mensagem: eraSomenteReferencia
-      ? 'O prestador definiu o período previsto para sua solicitação. Confira os dados na agenda.'
-      : 'O prestador alterou o horário da sua solicitação. Confira os novos dados.',
+    titulo: tituloHorario,
+    mensagem: mensagemHorario,
     link: '/painel/agenda#agendamentos'
+  });
+  await enviarEmailEventoSeguro({
+    usuarioId: agendamento.clienteId,
+    assunto: `${tituloHorario} - ConectaTorres`,
+    titulo: tituloHorario,
+    mensagem: `${mensagemHorario} Período previsto: ${inicio.toLocaleString('pt-BR')} até ${fim.toLocaleString('pt-BR')}.`,
+    link: '/painel/agenda#agendamentos',
+    botaoTexto: 'Ver agenda'
   });
   return res.json({ agendamento });
 }
@@ -178,12 +211,21 @@ export async function concluirAgendamento(req, res) {
     titulo: 'Atendimento concluído',
     descricao: `O prestador concluiu o atendimento em ${concluidoEm.toLocaleString('pt-BR')}.`
   });
+  const mensagemConclusao = 'Seu atendimento foi marcado como concluído. Você já pode avaliar o prestador.';
   await criarNotificacao({
     usuarioId: agendamento.clienteId,
     tipo: 'avaliacao',
     titulo: 'Atendimento concluído',
-    mensagem: 'Seu atendimento foi marcado como concluído. Você já pode avaliar o prestador.',
+    mensagem: mensagemConclusao,
     link: '/painel/avaliacoes'
+  });
+  await enviarEmailEventoSeguro({
+    usuarioId: agendamento.clienteId,
+    assunto: 'Atendimento concluído - ConectaTorres',
+    titulo: 'Atendimento concluído',
+    mensagem: mensagemConclusao,
+    link: '/painel/avaliacoes',
+    botaoTexto: 'Avaliar prestador'
   });
   return res.json({ agendamento });
 }

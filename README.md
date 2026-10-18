@@ -2,7 +2,7 @@
 
 Projeto de PDS para conexão entre clientes e prestadores de serviços locais em Torres/RS e região.
 
-Versão atual: **0.6.0 - orçamentos, fluxo comercial, histórico do atendimento e IA consultiva**.
+Versão atual: **0.7.0 - comunicação, confiança, verificação de e-mail e refinamento do fluxo comercial**.
 
 ## Tecnologias
 
@@ -20,11 +20,14 @@ Versão atual: **0.6.0 - orçamentos, fluxo comercial, histórico do atendimento
 
 ### Conta e segurança
 - Cadastro de cliente e prestador.
-- Login e logout.
+- Confirmação do e-mail por link temporário.
+- Reenvio de confirmação quando o link expira.
+- Login bloqueado para novas contas com e-mail ainda não confirmado.
 - Senhas com hash bcrypt.
 - JWT em cookie HTTP-only.
 - Rate limit, Helmet, CORS e validação de entrada.
 - Alteração de dados pessoais e senha.
+- Se o e-mail da conta for alterado, o novo endereço precisa ser confirmado.
 - Foto de perfil.
 - Recuperação de senha com token temporário e envio real por e-mail via SMTP.
 
@@ -32,10 +35,11 @@ Versão atual: **0.6.0 - orçamentos, fluxo comercial, histórico do atendimento
 - Busca tradicional com filtros e paginação.
 - Assistente inteligente em linguagem natural.
 - Orientação simples para usuários leigos, indicação de categorias e próximos passos.
-- Faixa de valores exibida somente quando há preços de referência reais cadastrados no PostgreSQL.
+- Faixa de valores exibida somente quando há preços reais cadastrados no PostgreSQL.
 - Favoritos, agenda, avaliações, denúncias e notificações.
 - Recebimento, aceitação e recusa de orçamentos.
-- Histórico do atendimento e da negociação.
+- Histórico cronológico do atendimento e da negociação.
+- E-mails automáticos em eventos relevantes.
 
 ### Prestador
 - Perfil profissional e portfólio.
@@ -43,34 +47,45 @@ Versão atual: **0.6.0 - orçamentos, fluxo comercial, histórico do atendimento
 - Gestão de solicitações e atendimentos.
 - Definição de período previsto antes de confirmar o atendimento.
 - Criação, revisão, reenvio e cancelamento de orçamentos.
-- Valor, descrição, materiais inclusos, validade e observações no orçamento.
+- Versionamento simples de orçamento: cada reenvio incrementa a versão da proposta.
+- Valor, descrição, materiais inclusos, validade e observações.
+- E-mails automáticos quando recebe solicitações ou quando o cliente responde um orçamento.
 - Sugestão de descrição profissional com IA, sempre sujeita à revisão antes de salvar.
 
 ### Administrador
 - Gestão de usuários, categorias, denúncias e avaliações.
+- Visualização do estado de verificação de e-mail dos usuários.
 - Conta administrativa sem cadastro público.
 
-## Fluxo comercial da v0.6
+## Fluxo comercial da v0.7
 
 ```text
 Cliente solicita atendimento
         ↓
+Prestador recebe notificação + e-mail
+        ↓
 Prestador define o período previsto
         ↓
-Prestador pode enviar orçamento
+Cliente recebe notificação + e-mail
         ↓
-Cliente recebe notificação
+Prestador envia orçamento
+        ↓
+Cliente recebe notificação + e-mail
         ↓
 Aceita ou recusa a proposta
         ↓
-Se aceitar, a solicitação pendente é confirmada
+Prestador recebe notificação + e-mail
         ↓
-Prestador executa e conclui o atendimento
+Se necessário, prestador revisa e reenvia uma nova versão
         ↓
-Cliente pode avaliar
+Atendimento é confirmado
+        ↓
+Prestador conclui
+        ↓
+Cliente recebe aviso e pode avaliar
 ```
 
-O orçamento é opcional: atendimentos simples podem continuar usando apenas o fluxo de agenda.
+O orçamento continua opcional: atendimentos simples podem usar somente o fluxo de agenda.
 
 ## Estrutura
 
@@ -138,7 +153,15 @@ Site: `http://localhost:5173`
 
 Copie `backend/.env.exemplo` para `backend/.env` e mantenha as credenciais reais somente no `.env`.
 
-A configuração de IA recomendada para o projeto é:
+A v0.7 acrescenta a configuração opcional:
+
+```env
+CONFIRMACAO_EMAIL_HORAS=24
+```
+
+Se ela não for definida, o sistema usa 24 horas por padrão.
+
+Configuração da IA:
 
 ```env
 IA_HABILITADA=true

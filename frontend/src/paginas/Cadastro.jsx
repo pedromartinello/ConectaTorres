@@ -12,12 +12,24 @@ export function Cadastro() {
   function alterar(campo, valor) { setForm((a) => ({ ...a, [campo]: valor })); }
 
   async function enviar(evento) {
-    evento.preventDefault(); setErro('');
+    evento.preventDefault();
+    setErro('');
     if (form.senha !== form.confirmarSenha) return setErro('As senhas não conferem.');
     if (!/[a-z]/.test(form.senha) || !/[A-Z]/.test(form.senha) || !/[0-9]/.test(form.senha)) return setErro('A senha deve ter letra maiúscula, minúscula e número.');
     setEnviando(true);
-    try { await cadastrar({ nome: form.nome, email: form.email, senha: form.senha, tipo: form.tipo }); navegar('/painel'); } catch (e) { setErro(e.message); } finally { setEnviando(false); }
+    try {
+      const dados = await cadastrar({ nome: form.nome, email: form.email, senha: form.senha, tipo: form.tipo });
+      if (dados.requerConfirmacaoEmail) {
+        navegar(`/confirmar-email?email=${encodeURIComponent(dados.email || form.email)}`, { state: { mensagem: dados.mensagem } });
+        return;
+      }
+      navegar('/painel');
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setEnviando(false);
+    }
   }
 
-  return <main className="container pagina-formulario"><form className="formulario-cartao" onSubmit={enviar}><span className="rotulo">Cadastro</span><h1>Criar conta</h1><p className="texto-suave">Escolha como deseja usar a plataforma.</p><label>Nome completo<input value={form.nome} onChange={(e) => alterar('nome', e.target.value)} required minLength="3" autoComplete="name" /></label><label>E-mail<input type="email" value={form.email} onChange={(e) => alterar('email', e.target.value)} required autoComplete="email" /></label><CampoSenha id="senha-cadastro" nome="senha" rotulo="Senha" valor={form.senha} aoAlterar={(e) => alterar('senha', e.target.value)} tamanhoMinimo={8} autoComplete="new-password" /><p className="ajuda-campo">Mínimo de 8 caracteres, com maiúscula, minúscula e número.</p><CampoSenha id="confirmar-senha" nome="confirmarSenha" rotulo="Confirmar senha" valor={form.confirmarSenha} aoAlterar={(e) => alterar('confirmarSenha', e.target.value)} tamanhoMinimo={8} autoComplete="new-password" /><label>Tipo de conta<select value={form.tipo} onChange={(e) => alterar('tipo', e.target.value)}><option value="cliente">Quero contratar serviços</option><option value="prestador">Quero oferecer meus serviços</option></select></label>{erro && <div className="alerta erro">{erro}</div>}<button className="botao" disabled={enviando}>{enviando ? 'Criando...' : 'Criar conta'}</button><p className="texto-suave">Já possui conta? <Link className="link-destaque" to="/entrar">Entrar</Link></p></form></main>;
+  return <main className="container pagina-formulario"><form className="formulario-cartao" onSubmit={enviar}><span className="rotulo">Cadastro</span><h1>Criar conta</h1><p className="texto-suave">Escolha como deseja usar a plataforma.</p><label>Nome completo<input value={form.nome} onChange={(e) => alterar('nome', e.target.value)} required minLength="3" autoComplete="name" /></label><label>E-mail<input type="email" value={form.email} onChange={(e) => alterar('email', e.target.value)} required autoComplete="email" /></label><CampoSenha id="senha-cadastro" nome="senha" rotulo="Senha" valor={form.senha} aoAlterar={(e) => alterar('senha', e.target.value)} tamanhoMinimo={8} autoComplete="new-password" /><p className="ajuda-campo">Mínimo de 8 caracteres, com maiúscula, minúscula e número.</p><CampoSenha id="confirmar-senha" nome="confirmarSenha" rotulo="Confirmar senha" valor={form.confirmarSenha} aoAlterar={(e) => alterar('confirmarSenha', e.target.value)} tamanhoMinimo={8} autoComplete="new-password" /><label>Tipo de conta<select value={form.tipo} onChange={(e) => alterar('tipo', e.target.value)}><option value="cliente">Quero contratar serviços</option><option value="prestador">Quero oferecer meus serviços</option></select></label><div className="aviso-cadastro-email">Após o cadastro, enviaremos um link para confirmar seu endereço de e-mail.</div>{erro && <div className="alerta erro">{erro}</div>}<button className="botao" disabled={enviando}>{enviando ? 'Criando...' : 'Criar conta'}</button><p className="texto-suave">Já possui conta? <Link className="link-destaque" to="/entrar">Entrar</Link></p></form></main>;
 }

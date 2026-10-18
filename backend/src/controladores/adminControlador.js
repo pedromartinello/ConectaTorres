@@ -27,7 +27,7 @@ export async function listarUsuarios(req, res) {
 
   const { rows: usuarios, count: total } = await Usuario.findAndCountAll({
     where,
-    attributes: ['id', 'nome', 'email', 'telefone', 'fotoUrl', 'tipo', 'ativo', 'createdAt'],
+    attributes: ['id', 'nome', 'email', 'emailVerificado', 'telefone', 'fotoUrl', 'tipo', 'ativo', 'createdAt'],
     include: [{ model: PerfilPrestador, as: 'perfilPrestador', required: false }],
     order: [['createdAt', 'DESC']],
     distinct: true,
