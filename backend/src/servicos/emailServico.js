@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { ambiente } from '../configuracao/ambiente.js';
 
-let transportador = null;
+let transportadorSmtp = null;
 
 function escaparHtml(texto = '') {
   return String(texto)
@@ -12,27 +12,27 @@ function escaparHtml(texto = '') {
     .replaceAll("'", '&#039;');
 }
 
-function obterTransportador() {
-  if (!ambiente.email.configurado) return null;
-  if (transportador) return transportador;
+function obterTransportadorSmtp() {
+  if (!ambiente.email.smtp.configurado) return null;
+  if (transportadorSmtp) return transportadorSmtp;
 
-  transportador = nodemailer.createTransport({
-    host: ambiente.email.host,
-    port: ambiente.email.porta,
-    secure: ambiente.email.seguro,
+  transportadorSmtp = nodemailer.createTransport({
+    host: ambiente.email.smtp.host,
+    port: ambiente.email.smtp.porta,
+    secure: ambiente.email.smtp.seguro,
     auth: {
-      user: ambiente.email.usuario,
-      pass: ambiente.email.senha
+      user: ambiente.email.smtp.usuario,
+      pass: ambiente.email.smtp.senha
     }
   });
 
-  return transportador;
+  return transportadorSmtp;
 }
 
-function remetente() {
+function remetenteTexto() {
   return ambiente.email.remetenteEmail
     ? `"${ambiente.email.remetenteNome}" <${ambiente.email.remetenteEmail}>`
-    : ambiente.email.usuario;
+    : ambiente.email.smtp.usuario;
 }
 
 function layoutEmail({ nome, titulo, mensagem, botaoTexto, link, rodape }) {
@@ -61,19 +61,8 @@ function layoutEmail({ nome, titulo, mensagem, botaoTexto, link, rodape }) {
   `;
 }
 
-export function emailEstaConfigurado() {
-  return ambiente.email.configurado;
-}
-
-export async function enviarEmailTransacional({ destinatario, nome, assunto, titulo, mensagem, botaoTexto = null, link = null, rodape = null }) {
-  const cliente = obterTransportador();
-  if (!cliente) {
-    const erro = new Error('O serviço de e-mail ainda não está configurado.');
-    erro.codigo = 'EMAIL_NAO_CONFIGURADO';
-    throw erro;
-  }
-
-  const linhasTexto = [
+function conteudoTexto({ nome, titulo, mensagem, botaoTexto, link, rodape }) {
+  return [
     `Olá, ${nome || 'usuário'}.`,
     '',
     titulo,
@@ -82,15 +71,96 @@ export async function enviarEmailTransacional({ destinatario, nome, assunto, tit
     link ? `${botaoTexto || 'Acessar'}: ${link}` : null,
     '',
     rodape || 'Esta é uma mensagem automática do ConectaTorres.'
-  ].filter((linha) => linha !== null);
+  ].filter((linha) => linha !== null).join('\n');
+}
 
-  await cliente.sendMail({
-    from: remetente(),
+async function enviarViaBrevo({ destinatario, assunto, texto, html }) {
+  const controlador = new AbortController();
+  const timeout = setTimeout(() => controlador.abort(), 12000);
+
+  try {
+    const resposta = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      signal: controlador.signal,
+      headers: {
+        accept: 'application/json',
+        'api-key': ambiente.email.brevo.apiKey,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          name: ambiente.email.remetenteNome,
+          email: ambiente.email.remetenteEmail
+        },
+        to: [{ email: destinatario }],
+        ...(ambiente.email.replyTo ? { replyTo: { email: ambiente.email.replyTo } } : {}),
+        subject: assunto,
+        textContent: texto,
+        htmlContent: html
+      })
+    });
+
+    if (!resposta.ok) {
+      const corpo = await resposta.text();
+      const erro = new Error(`Brevo recusou o envio (${resposta.status}). ${corpo.slice(0, 500)}`);
+      erro.codigo = 'EMAIL_BREVO_FALHOU';
+      throw erro;
+    }
+
+    return resposta.json().catch(() => ({}));
+  } catch (erro) {
+    if (erro.name === 'AbortError') {
+      const timeoutErro = new Error('Tempo limite excedido ao enviar e-mail pela Brevo.');
+      timeoutErro.codigo = 'EMAIL_TIMEOUT';
+      throw timeoutErro;
+    }
+    throw erro;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function enviarViaSmtp({ destinatario, assunto, texto, html }) {
+  const cliente = obterTransportadorSmtp();
+  if (!cliente) {
+    const erro = new Error('SMTP não está configurado.');
+    erro.codigo = 'EMAIL_SMTP_NAO_CONFIGURADO';
+    throw erro;
+  }
+
+  return cliente.sendMail({
+    from: remetenteTexto(),
     to: destinatario,
+    replyTo: ambiente.email.replyTo || undefined,
     subject: assunto,
-    text: linhasTexto.join('\n'),
-    html: layoutEmail({ nome, titulo, mensagem, botaoTexto, link, rodape })
+    text: texto,
+    html
   });
+}
+
+export function emailEstaConfigurado() {
+  return ambiente.email.configurado;
+}
+
+export function provedorEmailAtivo() {
+  return ambiente.email.provedor;
+}
+
+export async function enviarEmailTransacional({ destinatario, nome, assunto, titulo, mensagem, botaoTexto = null, link = null, rodape = null }) {
+  if (!ambiente.email.configurado) {
+    const erro = new Error('O serviço de e-mail ainda não está configurado.');
+    erro.codigo = 'EMAIL_NAO_CONFIGURADO';
+    throw erro;
+  }
+
+  const texto = conteudoTexto({ nome, titulo, mensagem, botaoTexto, link, rodape });
+  const html = layoutEmail({ nome, titulo, mensagem, botaoTexto, link, rodape });
+
+  if (ambiente.email.provedor === 'brevo') {
+    return enviarViaBrevo({ destinatario, assunto, texto, html });
+  }
+
+  return enviarViaSmtp({ destinatario, assunto, texto, html });
 }
 
 export async function enviarEmailRecuperacaoSenha({ destinatario, nome, link, minutos }) {

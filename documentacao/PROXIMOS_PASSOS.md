@@ -1,28 +1,13 @@
-# Próximos passos
+# Próximos passos — v1.0
 
-## v0.8 — atual
+A v1.0 deve ser uma versão de entrega, não uma nova rodada grande de funcionalidades.
 
-- Preparação para deploy.
-- PostgreSQL em nuvem.
-- Frontend Vercel.
-- Backend Railway.
-- Uploads persistentes.
-- CORS, cookies e variáveis de produção.
+Prioridades:
 
-## v0.9 — estabilização final
-
-- Substituir `sequelize.sync` por migrations versionadas.
-- Criar estratégia de backup/restauração do banco.
-- Testes automatizados dos fluxos críticos.
-- Revisão final de segurança e autorização.
-- Logs e observabilidade básicos.
-- Revisão da documentação técnica.
-
-## v1.0 — entrega
-
-- Correções encontradas no ambiente publicado.
-- Revisão responsiva e acessibilidade.
-- README final.
-- Dados de demonstração.
-- Roteiro de apresentação.
-- Tag/release final.
+- validar todos os testes da v0.9 em produção;
+- corrigir eventuais detalhes visuais/responsivos;
+- revisar textos e documentação;
+- preparar dados limpos de demonstração;
+- revisar README e apresentação acadêmica;
+- opcionalmente configurar domínio próprio;
+- gerar tag `v1.0` somente após a revisão final.

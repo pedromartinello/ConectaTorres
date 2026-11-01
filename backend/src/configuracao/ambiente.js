@@ -8,7 +8,7 @@ function booleano(valor, padrao = false) {
 function valorReal(valor = '') {
   const texto = String(valor).trim();
   if (!texto) return false;
-  return !/^(sua_|seu_|gere_|defina_|troque_|cole_)/i.test(texto);
+  return !/^(sua_|seu_|gere_|defina_|troque_|cole_|exemplo_)/i.test(texto);
 }
 
 function listaUrls(valor = '') {
@@ -19,6 +19,7 @@ function listaUrls(valor = '') {
 }
 
 const nodeEnv = process.env.NODE_ENV || 'development';
+const producao = nodeEnv === 'production';
 const databaseUrl = String(process.env.DATABASE_URL || '').trim();
 const usaDatabaseUrl = Boolean(databaseUrl);
 
@@ -32,16 +33,33 @@ if (!usaDatabaseUrl) {
 if (!process.env.JWT_SEGREDO) {
   throw new Error('Variável de ambiente ausente: JWT_SEGREDO');
 }
+if (producao && String(process.env.JWT_SEGREDO).length < 48) {
+  throw new Error('JWT_SEGREDO deve possuir pelo menos 48 caracteres em produção.');
+}
+if (producao && process.env.ADMIN_SENHA && String(process.env.ADMIN_SENHA).length < 12) {
+  throw new Error('ADMIN_SENHA deve possuir pelo menos 12 caracteres em produção.');
+}
 
 const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+if (producao && !frontendUrl.startsWith('https://')) {
+  throw new Error('FRONTEND_URL deve usar HTTPS em produção.');
+}
 const urlsAdicionais = listaUrls(process.env.FRONTEND_URLS_ADICIONAIS || '');
 const frontendUrlsPermitidas = [...new Set([frontendUrl, ...urlsAdicionais])];
 
 const smtpUsuario = process.env.SMTP_USUARIO || '';
 const smtpSenha = process.env.SMTP_SENHA || '';
 const smtpHost = process.env.SMTP_HOST || '';
+const smtpConfigurado = Boolean(valorReal(smtpHost) && valorReal(smtpUsuario) && valorReal(smtpSenha));
 
-const cookieSameSitePadrao = nodeEnv === 'production' ? 'none' : 'lax';
+const emailRemetenteNome = process.env.EMAIL_REMETENTE_NOME || 'ConectaTorres';
+const emailRemetente = process.env.EMAIL_REMETENTE || smtpUsuario;
+const emailReplyTo = process.env.EMAIL_REPLY_TO || emailRemetente;
+const brevoApiKey = process.env.BREVO_API_KEY || '';
+const brevoConfigurado = Boolean(valorReal(brevoApiKey) && valorReal(emailRemetente));
+const provedorEmail = brevoConfigurado ? 'brevo' : (smtpConfigurado ? 'smtp' : null);
+
+const cookieSameSitePadrao = producao ? 'none' : 'lax';
 const cookieSameSite = String(process.env.COOKIE_SAMESITE || cookieSameSitePadrao).toLowerCase();
 const sameSitesPermitidos = ['lax', 'strict', 'none'];
 if (!sameSitesPermitidos.includes(cookieSameSite)) {
@@ -50,7 +68,7 @@ if (!sameSitesPermitidos.includes(cookieSameSite)) {
 
 export const ambiente = {
   nodeEnv,
-  producao: nodeEnv === 'production',
+  producao,
   porta: Number(process.env.PORT || process.env.PORTA || 3001),
   frontendUrl,
   frontendUrlsPermitidas,
@@ -84,14 +102,23 @@ export const ambiente = {
     horasExpiracao: Number(process.env.CONFIRMACAO_EMAIL_HORAS || 24)
   },
   email: {
-    configurado: Boolean(valorReal(smtpHost) && valorReal(smtpUsuario) && valorReal(smtpSenha)),
-    host: smtpHost,
-    porta: Number(process.env.SMTP_PORTA || 465),
-    seguro: booleano(process.env.SMTP_SEGURO, true),
-    usuario: smtpUsuario,
-    senha: smtpSenha,
-    remetenteNome: process.env.EMAIL_REMETENTE_NOME || 'ConectaTorres',
-    remetenteEmail: process.env.EMAIL_REMETENTE || smtpUsuario
+    configurado: Boolean(provedorEmail),
+    provedor: provedorEmail,
+    remetenteNome: emailRemetenteNome,
+    remetenteEmail: emailRemetente,
+    replyTo: emailReplyTo,
+    brevo: {
+      apiKey: brevoApiKey,
+      configurado: brevoConfigurado
+    },
+    smtp: {
+      configurado: smtpConfigurado,
+      host: smtpHost,
+      porta: Number(process.env.SMTP_PORTA || 465),
+      seguro: booleano(process.env.SMTP_SEGURO, true),
+      usuario: smtpUsuario,
+      senha: smtpSenha
+    }
   },
   ia: {
     habilitada: booleano(process.env.IA_HABILITADA, true),

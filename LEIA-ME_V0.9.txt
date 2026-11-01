@@ -1,0 +1,13 @@
+ConectaTorres v0.9 — e-mail em produção, segurança e migrations
+
+1. Aplique este patch SOBRE a v0.8 já funcionando.
+2. Não substitua backend/.env real pelo .env.exemplo.
+3. Não apague .git nem backend/uploads.
+4. Rode npm install em backend e frontend para sincronizar package-lock, se ele existir no seu projeto.
+5. Rode npm run verificar no backend.
+6. Teste localmente antes de git add/commit.
+7. Configure a Brevo no Railway conforme documentacao/EMAIL_BREVO_RAILWAY_V0.9.md.
+8. Faça redeploy e valide /api/saude.
+9. Só depois dos testes faça commit e tag v0.9.
+
+Não coloque chaves reais no GitHub.
