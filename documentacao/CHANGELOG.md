@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.0.0
+
+- Consolida a versão final do ConectaTorres para entrega acadêmica.
+- Atualiza frontend e backend para 1.0.0.
+- Sincroniza a validade do cookie de autenticação com `JWT_EXPIRACAO`.
+- Valida o formato configurado de expiração do JWT.
+- Adiciona identificação da API e atualiza a rota de saúde para 1.0.0.
+- Adiciona títulos de página dinâmicos, metadata final e rodapé de versão.
+- Melhora indicadores de foco para acessibilidade.
+- Consolida README, checklist, resumo técnico e documentação de entrega.
+- Mantém o escopo funcional validado da v0.9 sem introduzir mudanças de alto risco.
+
 ## v0.9.0
 
 - Adiciona envio de e-mail em produção pela API HTTPS da Brevo.

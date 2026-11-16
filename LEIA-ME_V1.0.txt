@@ -1,0 +1,11 @@
+CONECTATORRES v1.0 — VERSÃO FINAL
+
+1. Aplique este patch por cima da v0.9 aprovada.
+2. Não substitua seu backend/.env real nem a pasta backend/uploads.
+3. Rode npm run verificar no backend.
+4. Teste localmente login, painel e fluxos principais.
+5. Faça commit/push; Vercel e Railway devem redeployar automaticamente.
+6. Confirme /api/saude com versao 1.0.0, ia true e email true.
+7. Só então crie e envie a tag v1.0.
+
+Depois disso, congele o escopo do sistema e siga para artigo e apresentação.

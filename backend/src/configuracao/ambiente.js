@@ -36,6 +36,10 @@ if (!process.env.JWT_SEGREDO) {
 if (producao && String(process.env.JWT_SEGREDO).length < 48) {
   throw new Error('JWT_SEGREDO deve possuir pelo menos 48 caracteres em produção.');
 }
+const jwtExpiracao = String(process.env.JWT_EXPIRACAO || '8h').trim().toLowerCase();
+if (!/^\d+[smhd]$/.test(jwtExpiracao)) {
+  throw new Error('JWT_EXPIRACAO deve usar um formato como 30m, 8h ou 1d.');
+}
 if (producao && process.env.ADMIN_SENHA && String(process.env.ADMIN_SENHA).length < 12) {
   throw new Error('ADMIN_SENHA deve possuir pelo menos 12 caracteres em produção.');
 }
@@ -92,7 +96,7 @@ export const ambiente = {
   },
   jwt: {
     segredo: process.env.JWT_SEGREDO,
-    expiracao: process.env.JWT_EXPIRACAO || '8h'
+    expiracao: jwtExpiracao
   },
   recuperacaoSenha: {
     minutosExpiracao: Number(process.env.RECUPERACAO_SENHA_MINUTOS || 30),

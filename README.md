@@ -2,14 +2,17 @@
 
 Plataforma web para conexão entre clientes e prestadores de serviços locais em Torres/RS e região.
 
-## Versão atual
+## Versão final
 
-**v0.9.0 — fechamento de produção, e-mail por API HTTPS, segurança e migrations**
+**v1.0.0 — versão final do Projeto Tecnológico / PDS**
 
-O projeto está preparado para funcionar em dois ambientes:
+A aplicação está publicada e validada em produção, com frontend, API, banco de dados, armazenamento persistente, inteligência artificial e envio de e-mails transacionais.
 
-- desenvolvimento local com React/Vite, Node/Express e PostgreSQL via Docker;
-- produção com frontend na Vercel, backend e PostgreSQL no Railway e uploads em volume persistente.
+### Ambiente publicado
+
+- Frontend: `https://conecta-torres.vercel.app`
+- API: `https://conectatorres-production.up.railway.app`
+- Saúde da API: `https://conectatorres-production.up.railway.app/api/saude`
 
 ## Tecnologias
 
@@ -21,6 +24,7 @@ O projeto está preparado para funcionar em dois ambientes:
 - E-mail em produção: Brevo API HTTPS
 - E-mail local opcional: SMTP/Nodemailer
 - Hospedagem: Vercel + Railway
+- Armazenamento de imagens: volume persistente no Railway
 
 ## Funcionalidades principais
 
@@ -30,12 +34,28 @@ O projeto está preparado para funcionar em dois ambientes:
 - serviços, categorias, busca e favoritos;
 - agenda semanal, bloqueios e solicitações;
 - orçamentos com revisão, aceite e recusa;
-- histórico do atendimento;
+- histórico cronológico do atendimento;
 - notificações internas e por e-mail;
 - conclusão de serviços e avaliações;
 - denúncias e painel administrativo;
-- assistente de IA para interpretar necessidades e melhorar descrição profissional;
-- deploy em produção com banco e uploads persistentes.
+- assistente de IA para interpretar necessidades e auxiliar o prestador na descrição profissional;
+- deploy em produção com PostgreSQL e uploads persistentes.
+
+## Arquitetura de produção
+
+```text
+Usuário
+   ↓ HTTPS
+Vercel — React/Vite
+   ↓ HTTPS / API REST
+Railway — Node.js/Express
+   ├── PostgreSQL
+   ├── Volume /dados/uploads
+   ├── OpenAI API
+   └── Brevo API HTTPS
+```
+
+A IA é utilizada para interpretação e orientação. Dados objetivos como profissionais, avaliações, agenda, serviços e valores cadastrados são obtidos do PostgreSQL da própria plataforma.
 
 ## Estrutura
 
@@ -63,23 +83,26 @@ ConectaTorres/
 
 ## Execução local
 
-### Banco
+### 1. Banco
 
 ```bash
 docker compose up -d banco
 ```
 
-### Backend
+### 2. Backend
+
+Copie `backend/.env.exemplo` para `backend/.env` e configure apenas os valores locais e segredos necessários.
 
 ```bash
 cd backend
 npm install
+npm run verificar
 npm run dev
 ```
 
 API local: `http://localhost:3001`
 
-### Frontend
+### 3. Frontend
 
 ```bash
 cd frontend
@@ -91,53 +114,60 @@ Frontend local: `http://localhost:5173`
 
 ## Produção
 
-Arquitetura utilizada:
+### Vercel
 
-```text
-Vercel (React/Vite)
-        ↓ HTTPS
-Railway (Node/Express)
-        ↓
-Railway PostgreSQL
-        ↓
-Volume persistente /dados/uploads
-```
+- Root Directory: `frontend`
+- Framework: Vite
+- variável principal: `VITE_API_URL=https://conectatorres-production.up.railway.app/api`
 
-E-mails em produção são enviados por API HTTPS da Brevo, evitando dependência de SMTP no Railway Free/Trial/Hobby.
+### Railway
 
-Consulte:
-
-- `documentacao/EMAIL_BREVO_RAILWAY_V0.9.md`
-- `documentacao/SEGURANCA_V0.9.md`
-- `documentacao/TESTES_V0.9.md`
+- Root Directory: `/backend`
+- PostgreSQL por `DATABASE_URL`;
+- volume montado em `/dados`;
+- `UPLOAD_DIRETORIO=/dados/uploads`;
+- `FRONTEND_URL=https://conecta-torres.vercel.app`;
+- segredos configurados somente nas Variables do serviço.
 
 ## Segurança
 
-A aplicação utiliza:
+A versão final utiliza:
 
 - senhas com bcrypt;
 - JWT em cookie HTTP-only e `secure` em produção;
+- validade do cookie sincronizada com `JWT_EXPIRACAO`;
 - CORS restrito às URLs configuradas;
 - Helmet;
-- rate limit global e limites mais restritos para autenticação, recuperação e IA;
+- rate limit geral e limites específicos para autenticação, recuperação e IA;
 - validação de entrada com `express-validator`;
 - limite de tamanho de JSON e uploads;
-- tokens de confirmação e recuperação armazenados somente como hash;
+- tokens de confirmação e recuperação armazenados como hash;
 - controle de acesso por perfil;
 - segredos apenas por variáveis de ambiente;
 - JWT com tamanho mínimo obrigatório em produção;
 - migrations versionadas para alterações de banco.
 
-## Git
+## Documentação final
 
-Nunca envie `.env`, chaves de API, senhas, `node_modules` ou uploads para o repositório.
+Consulte principalmente:
 
-Após validar a v0.9:
+- `documentacao/ENTREGA_V1.0.md`
+- `documentacao/CHECKLIST_FINAL_V1.0.md`
+- `documentacao/RESUMO_TECNICO_V1.0.md`
+- `documentacao/COMANDOS_GIT_V1.0.md`
+- `documentacao/CHANGELOG.md`
+
+## Git — fechamento da v1.0
+
+Após validar localmente e em produção:
 
 ```bash
+git status
 git add .
-git commit -m "feat: finaliza v0.9 com email em producao, seguranca e migrations"
+git commit -m "release: finaliza ConectaTorres v1.0"
 git push
-git tag -a v0.9 -m "ConectaTorres v0.9 - email, seguranca e preparacao final"
-git push origin v0.9
+git tag -a v1.0 -m "ConectaTorres v1.0 - versao final do projeto"
+git push origin v1.0
 ```
+
+Nunca envie `.env`, chaves de API, senhas, `node_modules` ou uploads de usuários ao repositório.

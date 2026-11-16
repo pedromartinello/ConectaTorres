@@ -17,10 +17,15 @@ import orcamentoRotas from './orcamentoRotas.js';
 import { ambiente } from '../configuracao/ambiente.js';
 
 const router = Router();
+router.get('/', (req, res) => res.json({
+  aplicacao: 'ConectaTorres API',
+  versao: '1.0.0',
+  status: 'online'
+}));
 router.get('/saude', (req, res) => res.json({
   status: 'ok',
   aplicacao: 'ConectaTorres API',
-  versao: '0.9.0',
+  versao: '1.0.0',
   ambiente: ambiente.nodeEnv,
   integracoes: {
     ia: ambiente.ia.habilitada && ambiente.ia.configurada,
